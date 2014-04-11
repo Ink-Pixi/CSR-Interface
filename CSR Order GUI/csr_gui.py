@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QDockWidget,
         QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame)
 
 from csrLogic import CSRwidgets
-
+#change 1
 
 class MainWindow(QMainWindow):
     def __init__(self):
