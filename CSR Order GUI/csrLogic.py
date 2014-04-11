@@ -1,9 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QDockWidget, QListWidget
+from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt
 from queries import get_onSale
 
-class CSRwidgets(QWidget):
+class CSRWidgets(QWidget):
     
     def createSaleButtons(self):
         btnLayout = QGridLayout()
@@ -24,7 +24,9 @@ class CSRwidgets(QWidget):
             buttons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             buttons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
             #buttons[(i)].setFont(QFont("Helvetica",10,QFont.Bold))
+            buttons[(i)].setObjectName(str(t[2]))
             buttons[(i)].setText(str(t[2]) + '\n' + str(t[1]))
+            buttons[(i)].clicked.connect(self.btnSaleClick)
 
             # add to the layout
             btnLayout.addWidget(buttons[(i)], j, k)   
@@ -37,25 +39,14 @@ class CSRwidgets(QWidget):
         
         return btnLayout        
     
-    def createDockWindows(self):
-        dock = QDockWidget("Stuff", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.customerList = QListWidget(dock)
-        self.customerList.addItems((
-            "stuff"))
-        dock.setWidget(self.customerList)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())
+    def createActions(self):
 
-        dock = QDockWidget("More Stuff", self)
-        self.paragraphsList = QListWidget(dock)
-        self.paragraphsList.addItems((
-            "more stuff"))
-        dock.setWidget(self.paragraphsList)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())    
+        self.quitAct = QAction(QIcon('icon/exit.png'), "&Quit", self, shortcut="Ctrl+Q",
+                statusTip="Quit the application", triggered=self.close)
+
+        self.aboutAct = QAction("&About", self,
+                statusTip="Show the application's About box",
+                triggered=self.about)  
         
-    def createToolBars(self):
-        self.fileToolBar = self.addToolBar("File")
-        self.fileToolBar.addAction(self.quitAct)
-        self.fileToolBar.addAction(self.printAct)        
+    def loadDesignItem(self, design):
+        print(design)
