@@ -51,8 +51,9 @@ class CSRWidgets(QWidget):
         self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
                                  triggered=self.btnSearch_Click)
         
-    def loadDesignItem(self, design):
-        print(design)
+    def loadDesignItem(self, sku_code):
+        des = getQueries.get_Design(self, sku_code)
+        print(des)
         
     def onShow(self):
         if not self.mainFrame:
