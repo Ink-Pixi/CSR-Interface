@@ -19,7 +19,7 @@ def get_onSale():
     """)
     # fetch all of the rows from the query
     on_sale_designs = db.fetchall()
-    db.close()
+    #db.close()
     
     return on_sale_designs
 #print( on_sale_designs)

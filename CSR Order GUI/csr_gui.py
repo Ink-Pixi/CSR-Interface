@@ -10,9 +10,11 @@ from csrLogic import CSRWidgets
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+        
         self.createButtons()
         self.setUpMenus()
-            
+       
+        self.setCentralWidget(self.mainFrame)
         self.setWindowTitle("CSR proving ground")
         
     def setUpMenus(self):
@@ -22,15 +24,14 @@ class MainWindow(QMainWindow):
         self.createDockWindows()
         
     def createButtons(self):
-        frmDesign = QFrame()
-        frmDesign.setStyleSheet("background-color: rgb(255, 255, 255);")
-        frmDesign.setLayout(CSRWidgets.createSaleButtons(self))
-           
+        self.mainFrame = QFrame()
+        self.mainFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.mainFrame.setLayout(CSRWidgets.createSaleButtons(self))
+        
         self.textEdit = QTextEdit()
-        self.setCentralWidget(frmDesign)
 
     def about(self):
-        QMessageBox.about(self, "sup, dog.")
+        QMessageBox.about(self, "sup, dog.", "sup")
 
 
     def createMenus(self):
@@ -79,7 +80,11 @@ class MainWindow(QMainWindow):
         btnName = self.sender()
         design = str(btnName.objectName())
         CSRWidgets.loadDesignItem(self, design)
-
+        CSRWidgets.onHide(self)
+        
+    def btnShow_Click(self):
+        CSRWidgets.onShow(self)
+        
 
 if __name__ == '__main__':
 

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction
+from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QFrame
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt
 from queries import get_onSale
@@ -50,3 +50,22 @@ class CSRWidgets(QWidget):
         
     def loadDesignItem(self, design):
         print(design)
+        
+    def onShow(self):
+        if not self.mainFrame:
+            self.createButtons()
+            self.setCentralWidget(self.mainFrame)
+            
+    def onHide(self):
+        if self.mainFrame:
+            self.mainFrame.deleteLater()
+            self.mainFrame = None
+            
+            hBox = QHBoxLayout()
+            btnTest = QPushButton("Test")
+            btnTest.clicked.connect(self.btnShow_Click)
+            hBox.addWidget(btnTest)
+            
+            self.frmTest = QFrame()
+            self.frmTest.setLayout(hBox)
+            self.setCentralWidget(self.frmTest)
