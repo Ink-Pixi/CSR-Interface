@@ -75,5 +75,7 @@ class CSRWidgets(QWidget):
             self.setCentralWidget(self.frmTest)
             
     def designSearch(self):
-        test = self.searchBar.text()
-        print(test)
+        sku_code = self.searchBar.text()
+        des = getQueries.get_Design(self, sku_code)
+        
+        print(des)
