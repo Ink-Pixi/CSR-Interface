@@ -1,11 +1,7 @@
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QGridLayout, QToolButton)
-import queries
+from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QLineEdit)
 from csrLogic import CSRWidgets
-#change 1
-#change 1 to branch_2
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -33,7 +29,6 @@ class MainWindow(QMainWindow):
     def about(self):
         QMessageBox.about(self, "sup, dog.", "sup")
 
-
     def createMenus(self):
         
         CSRWidgets.createActions(self)
@@ -55,7 +50,11 @@ class MainWindow(QMainWindow):
         self.fileToolBar = self.addToolBar("File")
         self.fileToolBar.addAction(self.quitAct)
 
-        self.editToolBar = self.addToolBar("Edit")
+        self.searchToolBar = self.addToolBar("Search")
+        self.searchToolBar.addAction(self.searchAct)
+        self.searchBar = QLineEdit()
+        self.searchBar.setMaximumWidth(100)
+        self.searchToolBar.addWidget(self.searchBar)
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
@@ -85,6 +84,8 @@ class MainWindow(QMainWindow):
     def btnShow_Click(self):
         CSRWidgets.onShow(self)
         
+    def btnSearch_Click(self):
+        CSRWidgets.designSearch(self)
 
 if __name__ == '__main__':
 
