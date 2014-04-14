@@ -1,7 +1,8 @@
 #Connect to Wampserver db xaotees-inkpixi
 import mysql.connector
 
-class ConnectDB(): 
+class ConnectDB():
+    def conn(self): 
         config = {
         'user': 'AI_APP',
         'password': 'rowsby01',
@@ -12,6 +13,11 @@ class ConnectDB():
         cnx = mysql.connector.connect(**config)
         # prepare a cursor object using cursor() method
         c1 = cnx.cursor()
+        
+        return c1
+        
+
+        
         
 
 #connect() 

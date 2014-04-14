@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QFrame
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt
-from queries import get_onSale
+from queries import getQueries
+
 
 class CSRWidgets(QWidget):
     
@@ -9,7 +10,9 @@ class CSRWidgets(QWidget):
         btnLayout = QGridLayout()
         
         buttons = {}
-        onSale = get_onSale()
+
+        onSale = getQueries.get_onSale(self)
+
         
         k = 0
         j = 0
