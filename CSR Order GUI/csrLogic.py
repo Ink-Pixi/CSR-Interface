@@ -44,12 +44,12 @@ class CSRWidgets(QWidget):
     
     def createActions(self):
 
-        self.quitAct = QAction(QIcon('icon/exit.png'), "&Quit", self, shortcut="Ctrl+Q",
-                statusTip="Quit the application", triggered=self.close)
+        self.quitAct = QAction(QIcon('icon/exit.png'), "&Quit", self, shortcut="Ctrl+Q", statusTip="Quit the application", 
+                               triggered=self.close)
 
-        self.aboutAct = QAction("&About", self,
-                statusTip="Show the application's About box",
-                triggered=self.about)  
+        self.aboutAct = QAction("&About", self, statusTip="Show the application's About box", triggered=self.about)  
+        self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
+                                 triggered=self.btnSearch_Click)
         
     def loadDesignItem(self, design):
         print(design)
@@ -72,3 +72,7 @@ class CSRWidgets(QWidget):
             self.frmTest = QFrame()
             self.frmTest.setLayout(hBox)
             self.setCentralWidget(self.frmTest)
+            
+    def designSearch(self):
+        test = self.searchBar.text()
+        print(test)
