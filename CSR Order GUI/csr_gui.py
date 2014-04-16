@@ -77,15 +77,16 @@ class MainWindow(QMainWindow):
         
     def btnSaleClick(self):
         btnName = self.sender()
-        design = str(btnName.objectName())
-        CSRWidgets.loadDesignItem(self, design)
-        CSRWidgets.onHide(self)
+        sku_code = str(btnName.objectName())
+        CSRWidgets.loadDesignItem(self, sku_code)
+        CSRWidgets.onHide(self,sku_code)
         
     def btnShow_Click(self):
         CSRWidgets.onShow(self)
         
     def btnSearch_Click(self):
-        CSRWidgets.designSearch(self)
+        sku_code = self.searchBar.text()
+        CSRWidgets.onHide(self,sku_code)
 
 if __name__ == '__main__':
 

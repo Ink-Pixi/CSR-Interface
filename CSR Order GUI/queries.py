@@ -22,7 +22,7 @@ class getQueries():
         db = conn.cursor()
         
         # Get all "on sale" items
-        db.execute ("""SELECT ic.inventories_id,ic.inventories_name,ic.inventories_lines_sku, inv.inventories_code,ic.inventories_price, inv.inventories_color, inv.inventories_name as garment_name,ic.inventories_image_url
+        db.execute ("""SELECT ic.inventories_id,ic.inventories_name,ic.inventories_lines_sku, inv.inventories_code,ic.inventories_price, inv.inventories_color, inv.inventories_name as garment_name,ic.inventories_image_url, concat('//wampserver/data/store/',ic.inventories_lines_sku,'-collage-box.jpg')
         FROM inventories_cache ic
         LEFT JOIN inventories inv on inv.inventories_id = ic.inventories_id
         WHERE ic.inventories_lines_sku = '""" + sku_code + """'

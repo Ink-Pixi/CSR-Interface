@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QFrame
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
+from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtCore import QSize, Qt
 from queries import getQueries
 
@@ -59,19 +59,26 @@ class CSRWidgets(QWidget):
         if not self.mainFrame:
             self.createButtons()
             self.setCentralWidget(self.mainFrame)
+
+
             
-    def onHide(self):
+    def onHide(self,sku_code):
         if self.mainFrame:
             self.mainFrame.deleteLater()
             self.mainFrame = None
             
-            hBox = QHBoxLayout()
-            btnTest = QPushButton("Test")
+            vBox = QVBoxLayout()
+            pix = QLabel()
+            pix.setPixmap(QPixmap("//wampserver/data/store/"+ sku_code + "-zoom-box.jpg"))
+            
+            btnTest = QPushButton("Back")
             btnTest.clicked.connect(self.btnShow_Click)
-            hBox.addWidget(btnTest)
+            
+            vBox.addWidget(pix)
+            vBox.addWidget(btnTest)
             
             self.frmTest = QFrame()
-            self.frmTest.setLayout(hBox)
+            self.frmTest.setLayout(vBox)
             self.setCentralWidget(self.frmTest)
             
     def designSearch(self):
