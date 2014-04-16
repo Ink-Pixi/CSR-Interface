@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
-from PyQt5.QtGui import QIcon, QImage, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QSize, Qt
-from queries import getQueries
+from queries import mysql_db
 
 
 class CSRWidgets(QWidget):
@@ -11,7 +11,7 @@ class CSRWidgets(QWidget):
         
         buttons = {}
 
-        onSale = getQueries.get_onSale(self)
+        onSale = mysql_db.saleButtons(self)
 
         
         k = 0
@@ -52,7 +52,7 @@ class CSRWidgets(QWidget):
                                  triggered=self.btnSearch_Click)
         
     def loadDesignItem(self, sku_code):
-        des = getQueries.get_Design(self, sku_code)
+        des = mysql_db.designInfo(self, sku_code)
         print(des)
         
     def onShow(self):
@@ -69,7 +69,7 @@ class CSRWidgets(QWidget):
             
             vBox = QVBoxLayout()
             pix = QLabel()
-            pix.setPixmap(QPixmap("//wampserver/data/store/"+ sku_code + "-zoom-box.jpg"))
+            pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))
             
             btnTest = QPushButton("Back")
             btnTest.clicked.connect(self.btnShow_Click)
@@ -81,8 +81,3 @@ class CSRWidgets(QWidget):
             self.frmTest.setLayout(vBox)
             self.setCentralWidget(self.frmTest)
             
-    def designSearch(self):
-        sku_code = self.searchBar.text()
-        des = getQueries.get_Design(self, sku_code)
-        
-        print(des)

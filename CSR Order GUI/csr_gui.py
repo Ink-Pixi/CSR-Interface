@@ -88,6 +88,9 @@ class MainWindow(QMainWindow):
         sku_code = self.searchBar.text()
         CSRWidgets.onHide(self,sku_code)
 
+        #CSRWidgets.loadDesignItem(self, sku_code)
+
+
 if __name__ == '__main__':
 
     import sys
