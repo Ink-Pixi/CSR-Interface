@@ -5,6 +5,7 @@ from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        self.supervar = None
         super(MainWindow, self).__init__()
         
         self.createButtons()

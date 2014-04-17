@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
+from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel,QListWidgetItem
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -56,14 +56,28 @@ class CSRWidgets(QWidget):
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
                                statusTip="This will undo actions added to order", triggered=CSRWidgets.undo)
         
-
+    def printSomething(self):
+        print(self)
+        
+        
     def loadDesignItem(self, sku_code):
+        self.customerList.clear()
         des = mysql_db.designInfo(self, sku_code)
         print(des)        
         
         des = mysql_db.designInfo(self, sku_code)
         for i in des:
-            self.customerList.addItem(str(i[5]))           
+            CSRWidgets.item = QListWidgetItem()
+            CSRWidgets.item.setText(str(i[5]))
+            
+            
+            self.customerList.addItem(CSRWidgets.item)
+            
+            
+            print (CSRWidgets.item)
+        self.customerList.itemClicked.connect(CSRWidgets.printSomething)
+
+                       
         vBox = QVBoxLayout()
         pix = QLabel()
         pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))
