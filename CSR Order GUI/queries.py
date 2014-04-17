@@ -1,15 +1,20 @@
+from PyQt5.QtWidgets import QMessageBox
 import mysql.connector
 import pyodbc
 
 class mysql_db():
     def mysql_connect(self):
-        mysql_db.conn = mysql.connector.connect(user = 'AI_APP', password = 'rowsby01', host = 'wampserver', database = 'inkpixi', raise_on_warnings = True) 
-        mysql_db.db = mysql_db.conn.cursor()
+        try:
+            mysql_db.conn = mysql.connector.connect(user = 'AI_APP', password = 'rowsby01', host = 'wampserver', database = 'inkpixi', raise_on_warnings = True) 
+            mysql_db.db = mysql_db.conn.cursor()
+        except BaseException as e:
+            QMessageBox.critcal(self, 'Database Error', "Can not connect to the MySQL database: \n" + str(e), QMessageBox.Ok)
+        
         return mysql_db.db
     
     def saleButtons(self):
         sb = mysql_db.mysql_connect(self)
-        sb.execute("""SELECT  ic.inventories_id,ic.inventories_name,ic.inventories_lines_sku, inv.inventories_code,ic.inventories_price, inv.inventories_color, inv.inventories_name as garment_name,ic.inventories_image_url 
+        sb.execute("""SELECT  ic.inventories_name, ic.inventories_lines_sku, ic.inventories_image_url 
                      FROM inventories_cache ic 
                      LEFT JOIN inventories inv on inv.inventories_id = ic.inventories_id WHERE ic.on_sale = 1 GROUP BY ic.inventories_lines_sku""")
         return sb.fetchall()
@@ -28,12 +33,15 @@ class mysql_db():
         """)
         return di.fetchall()
     
-    
 
 class mssql_db():
     def mssql_connect(self):
-        mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE=ImportExport; UID=ReportCreator; PWD=rowsby01;')
-        mssql_db.db = mssql_db.conn.cursor()
+        try:
+            mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE=ImportExport; UID=ReportCreator; PWD=rowsby01;')
+            mssql_db.db = mssql_db.conn.cursor()
+        except BaseException as e:
+            QMessageBox.critical(self, 'Database Error', "Cannon connect to the MS SQL Server: \n" + str(e), QMessageBox.Ok)
+        
         return mssql_db.db
     
     

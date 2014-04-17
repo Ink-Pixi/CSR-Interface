@@ -23,11 +23,9 @@ class MainWindow(QMainWindow):
         self.mainFrame = QFrame()
         self.mainFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.mainFrame.setLayout(CSRWidgets.createSaleButtons(self))
-        
-        self.textEdit = QTextEdit()
 
     def about(self):
-        QMessageBox.about(self, "sup, dog.", "sup")
+        QMessageBox.about(self, "sup?", "nothin, sup with you?")
 
     def createMenus(self):
         
@@ -47,14 +45,19 @@ class MainWindow(QMainWindow):
         self.helpMenu.addAction(self.aboutAct)
 
     def createToolBars(self):
-        self.fileToolBar = self.addToolBar("File")
-        self.fileToolBar.addAction(self.quitAct)
+        self.homeToolBar = self.addToolBar("Home")
+        self.homeToolBar.addAction(self.homeAct)
+        self.homeToolBar.addAction(self.quitAct)
 
         self.searchToolBar = self.addToolBar("Search")
         self.searchToolBar.addAction(self.searchAct)
+        
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(100)
         self.searchToolBar.addWidget(self.searchBar)
+        
+        self.searchToolBar.addSeparator()
+        self.searchToolBar.addAction(self.undoAct)
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
@@ -79,16 +82,16 @@ class MainWindow(QMainWindow):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
         CSRWidgets.loadDesignItem(self,sku_code)
+        CSRWidgets.onHide(self)
         
     def btnShow_Click(self):
         CSRWidgets.onShow(self)
         
     def btnSearch_Click(self):
         sku_code = self.searchBar.text()
-        CSRWidgets.loadDesignItem(self,sku_code)
-
-        #CSRWidgets.loadDesignItem(self, sku_code)
-
+        if self.mainFrame:
+            CSRWidgets.onHide(self)
+        CSRWidgets.loadDesignItem(self, sku_code)
 
 if __name__ == '__main__':
 
