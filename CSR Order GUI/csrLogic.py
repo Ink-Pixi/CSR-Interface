@@ -51,9 +51,6 @@ class CSRWidgets(QWidget):
         self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
                                  triggered=self.btnSearch_Click)
         
-    def loadDesignItem(self, sku_code):
-        des = mysql_db.designInfo(self, sku_code)
-        print(des)
         
     def onShow(self):
         if not self.mainFrame:
@@ -62,11 +59,14 @@ class CSRWidgets(QWidget):
 
 
             
-    def onHide(self,sku_code):
+    def loadDesignItem(self,sku_code):
         if self.mainFrame:
             self.mainFrame.deleteLater()
             self.mainFrame = None
-            
+        
+            des = mysql_db.designInfo(self, sku_code)
+            for i in des:
+                self.customerList.addItem(str(i[5]))           
             vBox = QVBoxLayout()
             pix = QLabel()
             pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))

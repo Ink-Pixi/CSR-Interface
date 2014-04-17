@@ -3,7 +3,7 @@ import pyodbc
 
 class mysql_db():
     def mysql_connect(self):
-        mysql_db.conn = mysql.connector.connect(user = 'AI_APP', password = 'rowsby01', host = 'wampserver', database = 'xaotees-inkpixi', raise_on_warnings = True) 
+        mysql_db.conn = mysql.connector.connect(user = 'AI_APP', password = 'rowsby01', host = 'wampserver', database = 'inkpixi', raise_on_warnings = True) 
         mysql_db.db = mysql_db.conn.cursor()
         return mysql_db.db
     
@@ -17,11 +17,14 @@ class mysql_db():
     
     def designInfo(self, sku_code):
         di = mysql_db.mysql_connect(self)
-        di.execute("""SELECT ic.inventories_id,ic.inventories_name,ic.inventories_lines_sku, inv.inventories_code,ic.inventories_price, inv.inventories_color, inv.inventories_name as garment_name,ic.inventories_image_url, concat('//wampserver/data/store/',ic.inventories_lines_sku,'-collage-box.jpg')
-        FROM inventories_cache ic
-        LEFT JOIN inventories inv on inv.inventories_id = ic.inventories_id
+        di.execute("""
+        SELECT ic.inventories_id,ic.inventories_name,ic.inventories_price, ic. inventories_lines_sku, i.inventories_code,i.inventories_name,i.inventories_color, 
+               it.inventories_types_name, it.inventories_types_id
+        FROM inventories_cache ic 
+        LEFT JOIN inventories i on ic.inventories_id = i.inventories_id
+        LEFT JOIN inventories_types it on ic.join_inventories_types_id = it.inventories_types_id
         WHERE ic.inventories_lines_sku = '""" + sku_code + """'
-        GROUP BY ic.inventories_lines_sku
+        ORDER BY it.inventories_types_id, i.inventories_name
         """)
         return di.fetchall()
     

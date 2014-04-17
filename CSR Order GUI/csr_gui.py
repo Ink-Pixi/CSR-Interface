@@ -61,9 +61,9 @@ class MainWindow(QMainWindow):
 
     def createDockWindows(self):
         dock = QDockWidget("Something", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        #dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.customerList = QListWidget(dock)
-        self.customerList.addItems(("stuff"))
+        #self.customerList.addItems(("stuff"))
         dock.setWidget(self.customerList)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
@@ -78,15 +78,14 @@ class MainWindow(QMainWindow):
     def btnSaleClick(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
-        CSRWidgets.loadDesignItem(self, sku_code)
-        CSRWidgets.onHide(self,sku_code)
+        CSRWidgets.loadDesignItem(self,sku_code)
         
     def btnShow_Click(self):
         CSRWidgets.onShow(self)
         
     def btnSearch_Click(self):
         sku_code = self.searchBar.text()
-        CSRWidgets.onHide(self,sku_code)
+        CSRWidgets.loadDesignItem(self,sku_code)
 
         #CSRWidgets.loadDesignItem(self, sku_code)
 
