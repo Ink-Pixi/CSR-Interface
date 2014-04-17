@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QLineEdit)
+from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QLineEdit, QDesktopWidget,
+                             QScrollArea)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
@@ -12,6 +13,13 @@ class MainWindow(QMainWindow):
        
         self.setCentralWidget(self.mainFrame)
         self.setWindowTitle("CSR proving ground")
+        
+        #Sizes and orients the App in the center of the screen.
+        self.resize(1500, 900)
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
         
     def setUpMenus(self):
         self.createMenus()
@@ -28,7 +36,6 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, "sup?", "nothin, sup with you?")
 
     def createMenus(self):
-        
         CSRWidgets.createActions(self)
         
         self.fileMenu = self.menuBar().addMenu("&File")
@@ -66,6 +73,7 @@ class MainWindow(QMainWindow):
         dock = QDockWidget("Something", self)
         #dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.customerList = QListWidget(dock)
+        self.customerList.setMinimumWidth(250)
         #self.customerList.addItems(("stuff"))
         dock.setWidget(self.customerList)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -73,6 +81,7 @@ class MainWindow(QMainWindow):
 
         dock = QDockWidget("Something Else", self)
         self.paragraphsList = QListWidget(dock)
+        self.paragraphsList.setMinimumWidth(250)
         self.paragraphsList.addItems(("more stuff"))
         dock.setWidget(self.paragraphsList)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)

@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
+from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QScrollArea
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
 
@@ -23,11 +23,11 @@ class CSRWidgets(QWidget):
             # keep a reference to the buttons
             buttons[(i)] = QToolButton(self)
             buttons[(i)].setIcon(QIcon("//wampserver/" + str(t[2])))
-            buttons[(i)].setIconSize(QSize(120, 120))
+            buttons[(i)].setIconSize(QSize(180, 180))
             buttons[(i)].setAutoRaise(True)
             buttons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             buttons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
-            #buttons[(i)].setFont(QFont("Helvetica",10,QFont.Bold))
+            buttons[(i)].setFont(QFont("Helvetica",12,QFont.Bold))
             buttons[(i)].setObjectName(str(t[1]))
             buttons[(i)].setText(str(t[1]) + '\n' + str(t[0]))
             buttons[(i)].clicked.connect(self.btnSaleClick)
@@ -39,7 +39,8 @@ class CSRWidgets(QWidget):
                 j += 1
                 k = 0
             else:
-                k += 1        
+                k += 1      
+                  
         
         return btnLayout        
     
@@ -58,6 +59,7 @@ class CSRWidgets(QWidget):
         
 
     def loadDesignItem(self, sku_code):
+        self.customerList.clear()
         des = mysql_db.designInfo(self, sku_code)
         print(des)        
         
