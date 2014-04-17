@@ -65,20 +65,12 @@ class CSRWidgets(QWidget):
         self.customerList.clear()
         des = mysql_db.designInfo(self, sku_code)
         print(des)        
-        
-        des = mysql_db.designInfo(self, sku_code)
+
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[5]))
-            
-            
             self.customerList.addItem(CSRWidgets.item)
-            
-            
-            print (CSRWidgets.item)
-        self.customerList.itemClicked.connect(CSRWidgets.printSomething)
-
-                       
+                
         vBox = QVBoxLayout()
         pix = QLabel()
         pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))

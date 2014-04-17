@@ -76,6 +76,7 @@ class MainWindow(QMainWindow):
         self.customerList = QListWidget(dock)
         self.customerList.setMinimumWidth(250)
         #self.customerList.addItems(("stuff"))
+        self.customerList.itemClicked.connect(CSRWidgets.printSomething)
         dock.setWidget(self.customerList)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
