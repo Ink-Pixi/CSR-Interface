@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         
     def btnSearch_Click(self):
         sku_code = self.searchBar.text()
-        if self.mainFrame:
+        if self.scrollWidget:
             CSRWidgets.onHide(self)
         CSRWidgets.loadDesignItem(self, sku_code)
 
