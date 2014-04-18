@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel,QListWidgetItem, QScrollArea
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
+                             QListWidgetItem, QScrollArea, QGroupBox)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -40,9 +41,8 @@ class CSRWidgets(QWidget):
                 k = 0
             else:
                 k += 1      
-                  
-        
-        return btnLayout        
+
+        return btnLayout
     
     def createActions(self):
 

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QLineEdit, QDesktopWidget,
-                             QScrollArea)
+                             QScrollArea, QWidget)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
         self.createButtons()
         self.setUpMenus()
        
-        self.setCentralWidget(self.mainFrame)
+        self.setCentralWidget(self.scrollWidget)
         self.setWindowTitle("CSR proving ground")
         
         #Sizes and orients the App in the center of the screen.
@@ -29,9 +29,17 @@ class MainWindow(QMainWindow):
         self.createDockWindows()
         
     def createButtons(self):
-        self.mainFrame = QFrame()
-        self.mainFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.mainFrame.setLayout(CSRWidgets.createSaleButtons(self))
+        mainWidget = QWidget()
+        mainWidget.setLayout(CSRWidgets.createSaleButtons(self))
+        mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
+        
+        self.scrollWidget = QScrollArea()
+        self.scrollWidget.setWidgetResizable(True)
+        self.scrollWidget.setWidget(mainWidget)
+        
+        #self.mainFrame = QFrame()
+        #self.mainFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
+        #self.mainFrame.setLayout(CSRWidgets.createSaleButtons(self))
 
     def about(self):
         QMessageBox.about(self, "sup?", "nothin, sup with you?")
