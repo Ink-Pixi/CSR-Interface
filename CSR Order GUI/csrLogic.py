@@ -40,7 +40,9 @@ class CSRWidgets(QWidget):
                 j += 1
                 k = 0
             else:
-                k += 1      
+                k += 1  
+                
+            btnLayout.setObjectName("salePage")    
 
         return btnLayout
     
@@ -64,6 +66,15 @@ class CSRWidgets(QWidget):
     def loadDesignItem(self, sku_code):
         self.customerList.clear()
         des = mysql_db.designInfo(self, sku_code)
+        
+        vBox = QVBoxLayout()
+        
+        if not des:
+            lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that" + \
+                             "they searched an empty string or that the design they were looking for does not exist or that" + \
+                             "they mistyped what they were looking for.", self)
+            vBox.addWidget(lblOpps)
+            CSRWidgets.changeCentralWidget(self, vBox)
         print(des)        
 
         for i in des:
@@ -71,7 +82,7 @@ class CSRWidgets(QWidget):
             CSRWidgets.item.setText(str(i[5]))
             self.customerList.addItem(CSRWidgets.item)
                 
-        vBox = QVBoxLayout()
+        
         pix = QLabel()
         pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))
         
@@ -81,23 +92,20 @@ class CSRWidgets(QWidget):
         vBox.addWidget(pix)
         vBox.addWidget(btnTest)
         
-        self.frmTest = QFrame()
-        self.frmTest.setLayout(vBox)
-        self.setCentralWidget(self.frmTest)
-
-        
-    def onShow(self):
-        if not self.scrollWidget:
-            self.createButtons()
-            self.setCentralWidget(self.scrollWidget)
-
-    def onHide(self):
-        if self.scrollWidget:
-            self.scrollWidget.deleteLater()
-            self.scrollWidget = None
+        CSRWidgets.changeCentralWidget(self, vBox)
         
     def undo(self):
         print("this will \"undo\" items added to the order.")
-            
-
-            
+        
+    def changeCentralWidget(self, widgetLayout):
+       
+        mainWidget = QWidget()
+        mainWidget.setLayout(widgetLayout)
+        if str(widgetLayout.objectName()) == "salePage":
+            mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
+        
+        scrollWidget = QScrollArea()
+        scrollWidget.setWidgetResizable(True)
+        scrollWidget.setWidget(mainWidget)
+        
+        self.setCentralWidget(scrollWidget)

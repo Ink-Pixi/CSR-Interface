@@ -9,13 +9,11 @@ class MainWindow(QMainWindow):
         self.supervar = None
         super(MainWindow, self).__init__()
         
-        self.createButtons()
         self.setUpMenus()
        
-        self.setCentralWidget(self.scrollWidget)
-        self.setWindowTitle("CSR proving ground")
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createSaleButtons(self)) #Sets central widget on init.
+        self.setWindowTitle("CSR Proving Ground")
         
-        #Sizes and orients the App in the center of the screen.
         self.resize(1500, 900)
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -28,19 +26,6 @@ class MainWindow(QMainWindow):
         self.createStatusBar()
         self.createDockWindows()
         
-    def createButtons(self):
-        mainWidget = QWidget()
-        mainWidget.setLayout(CSRWidgets.createSaleButtons(self))
-        mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
-        
-        self.scrollWidget = QScrollArea()
-        self.scrollWidget.setWidgetResizable(True)
-        self.scrollWidget.setWidget(mainWidget)
-        
-        #self.mainFrame = QFrame()
-        #self.mainFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
-        #self.mainFrame.setLayout(CSRWidgets.createSaleButtons(self))
-
     def about(self):
         QMessageBox.about(self, "sup?", "nothin, sup with you?")
 
@@ -100,16 +85,13 @@ class MainWindow(QMainWindow):
     def btnSaleClick(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
-        CSRWidgets.loadDesignItem(self,sku_code)
-        CSRWidgets.onHide(self)
+        CSRWidgets.loadDesignItem(self, sku_code)
         
     def btnShow_Click(self):
-        CSRWidgets.onShow(self)
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createSaleButtons(self))
         
     def btnSearch_Click(self):
         sku_code = self.searchBar.text()
-        if self.scrollWidget:
-            CSRWidgets.onHide(self)
         CSRWidgets.loadDesignItem(self, sku_code)
 
 if __name__ == '__main__':
