@@ -87,14 +87,14 @@ class CSRWidgets(QWidget):
 
         
     def onShow(self):
-        if not self.mainFrame:
+        if not self.scrollWidget:
             self.createButtons()
-            self.setCentralWidget(self.mainFrame)
+            self.setCentralWidget(self.scrollWidget)
 
     def onHide(self):
-        if self.mainFrame:
-            self.mainFrame.deleteLater()
-            self.mainFrame = None
+        if self.scrollWidget:
+            self.scrollWidget.deleteLater()
+            self.scrollWidget = None
         
     def undo(self):
         print("this will \"undo\" items added to the order.")
