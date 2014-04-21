@@ -80,6 +80,8 @@ class CSRWidgets(QWidget):
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[5]))
+            
+            currentInfo[i[5]] = (str(i[5]),str(i[8]),str(i[3]))
             self.availableItems.addItem(CSRWidgets.item)
                 
         pix = QLabel()
