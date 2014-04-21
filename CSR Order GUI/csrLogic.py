@@ -31,7 +31,7 @@ class CSRWidgets(QWidget):
             buttons[(i)].setFont(QFont("Helvetica",12,QFont.Bold))
             buttons[(i)].setObjectName(str(t[1]))
             buttons[(i)].setText(str(t[1]) + '\n' + str(t[0]))
-            buttons[(i)].clicked.connect(self.btnSaleClick)
+            buttons[(i)].clicked.connect(self.btnSale_Click)
 
             # add to the layout
             btnLayout.addWidget(buttons[(i)], j, k)   
@@ -55,23 +55,23 @@ class CSRWidgets(QWidget):
         self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
                                  triggered=self.btnSearch_Click)
         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
-                               triggered=self.btnShow_Click)
+                               triggered=self.btnHome_Click)
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
-                               statusTip="This will undo actions added to order", triggered=CSRWidgets.undo)
+                               statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
+        self.enterAct = QAction(self, shortcut=Qt.Key_Enter, triggered=self.btnSearch_Click)
         
-    def printSomething(self):
-        print(self)
-        
+    def addItem(self, design):
+        print(design)
         
     def loadDesignItem(self, sku_code):
-        self.customerList.clear()
+        self.availableItems.clear()
         des = mysql_db.designInfo(self, sku_code)
         
         vBox = QVBoxLayout()
         
         if not des:
-            lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that" + \
-                             "they searched an empty string or that the design they were looking for does not exist or that" + \
+            lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that " + \
+                             "they searched an empty string or that the design they were looking for does not exist or that " + \
                              "they mistyped what they were looking for.", self)
             vBox.addWidget(lblOpps)
             CSRWidgets.changeCentralWidget(self, vBox)
@@ -80,14 +80,13 @@ class CSRWidgets(QWidget):
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[5]))
-            self.customerList.addItem(CSRWidgets.item)
+            self.availableItems.addItem(CSRWidgets.item)
                 
-        
         pix = QLabel()
         pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))
         
         btnTest = QPushButton("Back")
-        btnTest.clicked.connect(self.btnShow_Click)
+        btnTest.clicked.connect(self.btnHome_Click)
         
         vBox.addWidget(pix)
         vBox.addWidget(btnTest)
@@ -96,6 +95,7 @@ class CSRWidgets(QWidget):
         
     def undo(self):
         print("this will \"undo\" items added to the order.")
+        self.searchBar.clear()
         
     def changeCentralWidget(self, widgetLayout):
        

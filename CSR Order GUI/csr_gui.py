@@ -1,10 +1,10 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QTextEdit, QFrame, QLineEdit, QDesktopWidget,
-                             QScrollArea, QWidget)
+from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTextEdit)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
+    '''Doc - __init__ Constructor'''
     def __init__(self):
         self.supervar = None
         super(MainWindow, self).__init__()
@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         
         self.searchToolBar.addSeparator()
         self.searchToolBar.addAction(self.undoAct)
+        self.searchToolBar.addAction(self.enterAct)
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
@@ -66,38 +67,46 @@ class MainWindow(QMainWindow):
     def createDockWindows(self):
         dock = QDockWidget("Something", self)
         #dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.customerList = QListWidget(dock)
-        self.customerList.setMinimumWidth(250)
-        #self.customerList.addItems(("stuff"))
-        self.customerList.itemClicked.connect(CSRWidgets.printSomething)
-        dock.setWidget(self.customerList)
+        self.availableItems = QListWidget(dock)
+        self.availableItems.setMinimumWidth(250)
+        #self.availableItems.addItems(("stuff"))
+        #self.availableItems.itemClicked.connect(self.itemClicked_Click)
+        self.availableItems.currentTextChanged.connect(self.itemClicked_Click)
+        dock.setWidget(self.availableItems)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
 
         dock = QDockWidget("Something Else", self)
-        self.paragraphsList = QListWidget(dock)
-        self.paragraphsList.setMinimumWidth(250)
-        self.paragraphsList.addItems(("more stuff"))
-        dock.setWidget(self.paragraphsList)
+        self.orderItem = QListWidget(dock)
+        self.orderItem.setMinimumWidth(250)
+        #self.orderItem.insertText(("more stuff"))
+        dock.setWidget(self.orderItem)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
         
-    def btnSaleClick(self):
+    def btnSale_Click(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
         CSRWidgets.loadDesignItem(self, sku_code)
         
-    def btnShow_Click(self):
+    def btnHome_Click(self):
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createSaleButtons(self))
         
     def btnSearch_Click(self):
         sku_code = self.searchBar.text()
         CSRWidgets.loadDesignItem(self, sku_code)
 
+    def btnUndo_Click(self):
+        CSRWidgets.undo(self)
+
+    def itemClicked_Click(self, wtf):
+        print(wtf)
+        self.orderItem.addItem(wtf)
+        #CSRWidgets.addItem(self, )
+        
 if __name__ == '__main__':
 
     import sys
-
     app = QApplication(sys.argv)
     mainWin = MainWindow()
     mainWin.show()
