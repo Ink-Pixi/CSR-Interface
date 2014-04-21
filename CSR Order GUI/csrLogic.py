@@ -77,6 +77,7 @@ class CSRWidgets(QWidget):
             CSRWidgets.changeCentralWidget(self, vBox)
         print(des)        
 
+        currentInfo = {}
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[5]))
@@ -84,6 +85,7 @@ class CSRWidgets(QWidget):
             currentInfo[i[5]] = (str(i[5]),str(i[8]),str(i[3]))
             self.availableItems.addItem(CSRWidgets.item)
                 
+        print(currentInfo)
         pix = QLabel()
         pix.setPixmap(QPixmap("//wampserver/data/store/" + sku_code + "-zoom-box.jpg"))
         
