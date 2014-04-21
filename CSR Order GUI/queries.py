@@ -32,6 +32,25 @@ class mysql_db():
         ORDER BY it.inventories_types_id, i.inventories_name
         """)
         return di.fetchall()
+
+
+
+    def garmentInfo(self, sku_code, garment_type):
+        gi = mysql_db.mysql_connect(self)
+        gi.execute("""
+        SELECT inventories_code,ia.inventories_accessories_details, io.inventories_options_name 
+        FROM `inventories` inv 
+        LEFT JOIN inventories_cache ic on ic.inventories_id = inv.inventories_id
+        LEFT JOIN inventories_accessories ia on inventories_accessories_id = ic.inventories_global_accessories_ids
+        LEFT JOIN inventories_options io on io.join_inventories_accessories_id = ia.inventories_accessories_id
+        
+        LEFT JOIN inventories_types it on it.inventories_types_id = inv.join_inventories_types_id
+        WHERE ic.inventories_lines_sku = '""" + sku_code + """' 
+        AND it.inventories_types_id = '""" + garment_type  + """'
+        ORDER BY it.inventories_types_order,inv.inventories_code, ia.inventories_accessories_order, io.inventories_options_order
+        """)
+        return gi.fetchall() 
+
     
 
 class mssql_db():
