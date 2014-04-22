@@ -16,22 +16,46 @@ class mysql_db():
         sb = mysql_db.mysql_connect(self)
         sb.execute("""SELECT  ic.inventories_name, ic.inventories_lines_sku, ic.inventories_image_url 
                      FROM inventories_cache ic 
-                     LEFT JOIN inventories inv on inv.inventories_id = ic.inventories_id WHERE ic.on_sale = 1 GROUP BY ic.inventories_lines_sku""")
+                     WHERE ic.on_sale = 1 
+                     GROUP BY ic.inventories_lines_sku""")
         return sb.fetchall()
     
     
     def designInfo(self, sku_code):
         di = mysql_db.mysql_connect(self)
         di.execute("""
-        SELECT ic.inventories_id,ic.inventories_name,ic.inventories_price, ic. inventories_lines_sku, i.inventories_code,i.inventories_name,i.inventories_color, 
-               it.inventories_types_name, it.inventories_types_id
+        SELECT ic.inventories_id,ic.inventories_name,ic.inventories_price, ic.inventories_lines_sku, i.inventories_code,i.inventories_name,i.inventories_color, 
+               it.inventories_types_name, it.inventories_types_id, ic.inventories_image_url, it.inventories_types_icon_url,it.inventories_types_icon_hover_url
         FROM inventories_cache ic 
         LEFT JOIN inventories i on ic.inventories_id = i.inventories_id
         LEFT JOIN inventories_types it on ic.join_inventories_types_id = it.inventories_types_id
         WHERE ic.inventories_lines_sku = '""" + sku_code + """'
+        GROUP BY it.inventories_types_id
         ORDER BY it.inventories_types_id, i.inventories_name
         """)
         return di.fetchall()
+
+
+
+
+
+
+    def searchDesigns(self, searchTerm):
+        sd = mysql_db.mysql_connect(self)
+        sd.execute(""" 
+        SELECT  ic.inventories_name, ic.inventories_lines_sku, ic.inventories_image_url 
+        FROM inventories_cache ic
+        LEFT JOIN inventories_lines il on il.inventories_lines_id = ic.inventories_lines_id
+        WHERE  il.inventories_lines_search_keywords like '%"""+ searchTerm +"""%' 
+        GROUP BY il.inventories_lines_id
+        ORDER BY ic.inventories_name, ic.inventories_lines_sku
+        """)
+        return sd.fetchall()
+
+
+
+
+
 
 
 

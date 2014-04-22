@@ -6,12 +6,11 @@ from csrLogic import CSRWidgets
 class MainWindow(QMainWindow):
     '''Doc - __init__ Constructor'''
     def __init__(self):
-        self.supervar = None
         super(MainWindow, self).__init__()
         
         self.setUpMenus()
        
-        CSRWidgets.changeCentralWidget(self, CSRWidgets.createSaleButtons(self)) #Sets central widget on init.
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default')) #Sets central widget on init.
         self.setWindowTitle("CSR Proving Ground")
         
         self.resize(1500, 900)
@@ -54,7 +53,7 @@ class MainWindow(QMainWindow):
         self.searchToolBar.addAction(self.searchAct)
         
         self.searchBar = QLineEdit()
-        self.searchBar.setMaximumWidth(100)
+        self.searchBar.setMaximumWidth(150)
         self.searchToolBar.addWidget(self.searchBar)
         
         self.searchToolBar.addSeparator()
@@ -65,20 +64,22 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Ready")
 
     def createDockWindows(self):
-        dock = QDockWidget("Something", self)
+        dock = QDockWidget("Available Garments Types", self)
         #dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.availableItems = QListWidget(dock)
-        self.availableItems.setMinimumWidth(250)
+        self.availableItems.setMinimumWidth(350)
+        self.availableItems.setMaximumWidth(350)
         #self.availableItems.addItems(("stuff"))
         #self.availableItems.itemClicked.connect(self.itemClicked_Click)
-        self.availableItems.currentTextChanged.connect(self.itemClicked_Click)
+        self.availableItems.itemClicked.connect(self.itemClicked_Click)
         dock.setWidget(self.availableItems)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
 
-        dock = QDockWidget("Something Else", self)
+        dock = QDockWidget("Available Garment Sizes", self)
         self.orderItem = QListWidget(dock)
-        self.orderItem.setMinimumWidth(250)
+        self.orderItem.setMinimumWidth(350)
+        self.orderItem.setMaximumWidth(350)
         #self.orderItem.insertText(("more stuff"))
         dock.setWidget(self.orderItem)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
@@ -90,18 +91,23 @@ class MainWindow(QMainWindow):
         CSRWidgets.loadDesignItem(self, sku_code)
         
     def btnHome_Click(self):
-        CSRWidgets.changeCentralWidget(self, CSRWidgets.createSaleButtons(self))
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default'))
+        self.availableItems.clear()
+        self.orderItem.clear()
         
     def btnSearch_Click(self):
-        sku_code = self.searchBar.text()
-        CSRWidgets.loadDesignItem(self, sku_code)
+        self.availableItems.clear()
+        self.orderItem.clear()
+        searchTerm = self.searchBar.text()
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,searchTerm))
 
     def btnUndo_Click(self):
         CSRWidgets.undo(self)
 
-    def itemClicked_Click(self, wtf):
-        print(wtf)
-        self.orderItem.addItem(wtf)
+    def itemClicked_Click(self, item):
+        txtItem = item.text()
+        CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1])
+       
         #CSRWidgets.addItem(self, )
         
 if __name__ == '__main__':
