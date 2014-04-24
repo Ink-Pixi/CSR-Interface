@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,QObject
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTextEdit)
 from csrLogic import CSRWidgets
@@ -104,16 +104,17 @@ class MainWindow(QMainWindow):
     def btnUndo_Click(self):
         CSRWidgets.undo(self)
 
-    def itemClicked_Click(self, item):
-        txtItem = item.text()
-        CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1])
+    def itemClicked_Click(self):
+        button = self.sender()
+        txtItem = button.uniqueId
+        CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1],self.currentInfo[txtItem][0])
        
-        #CSRWidgets.addItem(self, )
         
 if __name__ == '__main__':
 
     import sys
     app = QApplication(sys.argv)
+    #app.setStyle("Fusion")
     mainWin = MainWindow()
     mainWin.show()
     sys.exit(app.exec_())

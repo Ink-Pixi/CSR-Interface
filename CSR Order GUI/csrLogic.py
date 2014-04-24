@@ -76,29 +76,43 @@ class CSRWidgets(QWidget):
         self.orderItem.clear()
         des = mysql_db.designInfo(self, sku_code)
         
-        vBox = QVBoxLayout()
+        self.vBox = QVBoxLayout()
         
         if not des:
             lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that " + \
                              "they searched an empty string or that the design they were looking for does not exist or that " + \
                              "they mistyped what they were looking for.", self)
-            vBox.addWidget(lblOpps)
-            CSRWidgets.changeCentralWidget(self, vBox)
+            self.vBox.addWidget(lblOpps)
+            CSRWidgets.changeCentralWidget(self, self.vBox)
         #print(des)        
 
         self.currentInfo = {}
         for i in des:
             CSRWidgets.item = QListWidgetItem()
-            CSRWidgets.item.setText(str(i[5]))           
-            self.currentInfo[i[5]] = (str(i[5]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]))
+            CSRWidgets.item.setText(str(i[7]))         
+            self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]))
             self.availableItems.addItem(CSRWidgets.item)
                 
-        smImage = self.currentInfo['Adult T-Shirt'][3]
+        smImage = self.currentInfo['T-Shirts'][3]
         hBox = QHBoxLayout()
         
+        
         pix = QLabel()
-        pix.setPixmap(QPixmap("//wampserver/"+ smImage))
+        smImg = QPixmap("//wampserver/"+ smImage)
+        myScaledPixmap = smImg.scaled(125,125, Qt.KeepAspectRatio)
+        pix.setPixmap(myScaledPixmap)
+
         hBox.addWidget(pix)
+        hFrame = QFrame()
+        hFrame.setLayout(hBox)
+        hFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
+        
+        print(self.currentInfo)
+        
+        
+        
+     
+        
         icons = {}
         for i in des:
             icons[(i)] = QToolButton(self)
@@ -108,16 +122,19 @@ class CSRWidgets(QWidget):
             icons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             #icons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
             icons[(i)].setFont(QFont("Helvetica",8))
-            icons[(i)].setObjectName(str(i[1]))
-            icons[(i)].setText(str(i[1]) + '\n' + str(i[3]))
+            #icons[(i)].setObjectName(str(i[7]))
+            icons[(i)].setText(str(i[7]) + '\n' + str(i[3]))
+            icons[(i)].uniqueId = str(i[7])
+            icons[(i)].clicked.connect(self.itemClicked_Click)
             hBox.addWidget(icons[(i)])
             print("//wampserver/" + str(i[10]))
         
         
-        vBox.addLayout(hBox)
-        vBox.addStretch(1)
+        hBox.addStretch(1)
+        self.vBox.addWidget(hFrame)
+        self.vBox.addStretch(1)
         
-        CSRWidgets.changeCentralWidget(self, vBox)
+        CSRWidgets.changeCentralWidget(self, self.vBox)
         
    
    
@@ -125,16 +142,24 @@ class CSRWidgets(QWidget):
    
         
 
-    def loadGarmentInfo(self,sku_code,garment_type):
+    def loadGarmentInfo(self,sku_code,garment_type,garment_name):      
+        layout = {}
+        grpBox = {}
+        grpBox[garment_name] = QGroupBox(garment_name)
         self.orderItem.clear()
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
-        for g in garm:
-            CSRWidgets.item = QListWidgetItem()
-            CSRWidgets.item.setText(str(g[0])+ ' - '+str(g[1])+ ' - '+str(g[2]))
-            self.orderItem.addItem(CSRWidgets.item)
-            
-        self.orderItem.addItem(CSRWidgets.item)
+        layout[garment_type] = QVBoxLayout()
 
+        
+        
+        for g in garm:
+            CSRWidgets.item = QLabel()
+            CSRWidgets.item.setText(str(g[0])+ ' - '+str(g[1])+ ' - '+str(g[2]))
+            layout[garment_type].addWidget(CSRWidgets.item)
+            
+
+        grpBox[garment_name].setLayout(layout[garment_type])
+        self.vBox.addWidget(grpBox[garment_name])
    
 
 
@@ -151,14 +176,14 @@ class CSRWidgets(QWidget):
         
     def changeCentralWidget(self, widgetLayout):
        
-        mainWidget = QWidget()
-        mainWidget.setLayout(widgetLayout)
-        mainWidget.setMinimumSize(1100, 800)
+        self.mainWidget = QWidget()
+        self.mainWidget.setLayout(widgetLayout)
+        self.mainWidget.setMinimumSize(1100, 800)
         if str(widgetLayout.objectName()) == "designPage":
-            mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
+            self.mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
         
-        scrollWidget = QScrollArea()
-        scrollWidget.setWidgetResizable(True)
-        scrollWidget.setWidget(mainWidget)
+        self.scrollWidget = QScrollArea()
+        self.scrollWidget.setWidgetResizable(True)
+        self.scrollWidget.setWidget(self.mainWidget)
         
-        self.setCentralWidget(scrollWidget)
+        self.setCentralWidget(self.scrollWidget)
