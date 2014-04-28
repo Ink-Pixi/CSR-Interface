@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QPushButton, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QGroupBox)
+                             QListWidgetItem, QScrollArea, QGroupBox, QTreeWidget, QTreeWidgetItem)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -144,27 +144,53 @@ class CSRWidgets(QWidget):
 
     def loadGarmentInfo(self,sku_code,garment_type,garment_name):      
         layout = {}
-        grpBox = {}
-        grpBox[garment_name] = QGroupBox(garment_name)
+        self.grpBox = {}
+        btnShow = {}
+        btnHide = {}
+        self.grpBox[garment_name] = QGroupBox(garment_name)
+        
+#         btnShow[garment_name] = QPushButton(garment_name)
+#         btnShow[garment_name].setObjectName(garment_name)
+#         btnShow[garment_name].clicked.connect(self.showOrder)
+#         
+#         btnHide[garment_name] = QPushButton(garment_name + " hide")
+#         btnHide[garment_name].setObjectName(garment_name)
+#         btnHide[garment_name].clicked.connect(self.hideOrder)
+        
         self.orderItem.clear()
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
         layout[garment_type] = QVBoxLayout()
-
+        #layout[garment_type].addWidget(btnShow[garment_name])
         
         
-        for g in garm:
-            CSRWidgets.item = QLabel()
-            CSRWidgets.item.setText(str(g[0])+ ' - '+str(g[1])+ ' - '+str(g[2]))
-            layout[garment_type].addWidget(CSRWidgets.item)
+#         for g in garm:
+#             CSRWidgets.item = QLabel()
+#             CSRWidgets.item.setText(str(g[0])+ ' - '+str(g[1])+ ' - '+str(g[2]))
+#             layout[garment_type].addWidget(CSRWidgets.item)
+#             layout[garment_type].setAlignment(self, Qt.AlignTop)
+#             print(layout[garment_type] )
             
+        
+        tree = QTreeWidget()
+        tree.setHeaderLabels([garment_name])
+        garm = mysql_db.garmentInfo(self, sku_code, garment_type)
+        parent = QTreeWidgetItem(tree)
+        parent.setText(0, garment_name)
+        for i in garm:
+            #l.append(QTreeWidgetItem(i[2]))
+            kiddo = QTreeWidgetItem(parent)
+            kiddo.setText(0, i[2])
+        #tree.addTopLevelItems(l)
+            
+            #btnShow.clicked.connect(self.show)
 
-        grpBox[garment_name].setLayout(layout[garment_type])
-        self.vBox.addWidget(grpBox[garment_name])
-   
+        #self.grpBox[garment_name].setLayout(layout[garment_type])
+        #self.vBox.addWidget(self.grpBox[garment_name])
+        #self.vBox.addWidget(btnShow[garment_name])
+        self.vBox.addWidget(tree)
+        #self.vBox.addWidget(btnHide[garment_name])
+        self.vBox.setAlignment(self, Qt.AlignTop)
 
-
-
-    
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()

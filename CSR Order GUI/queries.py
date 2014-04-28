@@ -80,7 +80,7 @@ class mysql_db():
 class mssql_db():
     def mssql_connect(self):
         try:
-            mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE=ImportExport; UID=ReportCreator; PWD=rowsby01;')
+            mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE=ImportExport; Trusted_Connection=yes')
             mssql_db.db = mssql_db.conn.cursor()
         except BaseException as e:
             QMessageBox.critical(self, 'Database Error', "Cannon connect to the MS SQL Server: \n" + str(e), QMessageBox.Ok)

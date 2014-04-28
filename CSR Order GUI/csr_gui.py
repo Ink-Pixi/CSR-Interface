@@ -108,7 +108,20 @@ class MainWindow(QMainWindow):
         button = self.sender()
         txtItem = button.uniqueId
         CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1],self.currentInfo[txtItem][0])
+        
+    def showOrder(self):
+        btn = self.sender()
+        txtName = btn.objectName()
+        print(txtName)
+        print(self.grpBox[txtName])
+        self.grpBox[txtName].show()
+        
        
+    def hideOrder(self):
+        btn = self.sender()
+        txtName = btn.objectName()
+        print(txtName)
+        self.grpBox[txtName].hide()
         
 if __name__ == '__main__':
 
