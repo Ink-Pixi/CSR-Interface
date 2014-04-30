@@ -84,6 +84,11 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
         self.viewMenu.addAction(self.dock.toggleViewAction())
         
+        #Create a tree widget for use when the t-shirt is clicked.
+        self.treeDock = QDockWidget("Order Items", self)
+        self.garmentTree = QTreeWidget(self.treeDock)
+        self.garmentTree.hide()
+        
     def btnSale_Click(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
@@ -92,11 +97,11 @@ class MainWindow(QMainWindow):
     def btnHome_Click(self):
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default'))
         self.availableItems.clear()
-        self.orderItem.clear()
+        #self.orderItem.clear()
         
     def btnSearch_Click(self):
         self.availableItems.clear()
-        self.orderItem.clear()
+        #self.orderItem.clear()
         searchTerm = self.searchBar.text()
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,searchTerm))
 

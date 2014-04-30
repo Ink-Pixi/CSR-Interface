@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QGroupBox, QTreeWidget, QTreeWidgetItem)
+                             QListWidgetItem, QScrollArea, QDockWidget, QTreeWidget, QTreeWidgetItem)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -8,7 +8,7 @@ from queries import mysql_db
 class CSRWidgets(QWidget):
     def __init__(self):
         super(CSRWidgets, self).__init__()    
-    
+   
     def createDesignButtons(self, qryId):
         btnLayout = QGridLayout()       
         buttons = {}
@@ -131,6 +131,7 @@ class CSRWidgets(QWidget):
         
         
         hBox.addStretch(1)
+        hBox.setAlignment(self, Qt.AlignTop)
         self.vBox.addWidget(hFrame)
         self.vBox.addStretch(1)
         
@@ -144,27 +145,32 @@ class CSRWidgets(QWidget):
 
     def loadGarmentInfo(self,sku_code,garment_type,garment_name):      
         #self.orderItem.clear()
-        garm = mysql_db.garmentInfo(self, sku_code, garment_type)
         
-        #tree = QTreeWidget()
-        #hl = "Item" + "," + "Qty"
-        #tree.setHeaderLabels(hl)
-        self.orderItem.header().close()
-        self.orderItem.header().resizeSection(0, 275)
-        self.orderItem.setColumnCount(2)
-        parent = QTreeWidgetItem(self.orderItem)
+        garm = mysql_db.garmentInfo(self, sku_code, garment_type)
+        ls = ["Garment", "Quantity"]
+        
+        
+        #self.garmentTree.header().close()
+        self.garmentTree.setHeaderLabels(ls)
+        self.garmentTree.header().resizeSection(0, 275)
+        self.garmentTree.setColumnCount(2)
+        #self.garmentTree.setMinimumHeight(700)
+        
+        parent = QTreeWidgetItem(self.garmentTree)
         parent.setText(0, garment_name)
+        
         for i in garm:
             kiddo = QTreeWidgetItem(parent)
             kiddo.setText(0, i[1] + " " + i[2])
-            #kiddo.
-            le = QLineEdit(self.orderItem)
+            le = QLineEdit(self.garmentTree)
             le.setMaximumWidth(30)
-            self.orderItem.setItemWidget(kiddo, 1, le)
-        #tree.addTopLevelItems(l)
-        self.vBox.addWidget(self.orderItem)
-        self.vBox.setAlignment(self, Qt.AlignTop)
-
+            self.garmentTree.setItemWidget(kiddo, 1, le)
+        
+        self.garmentTree.show()
+        self.vBox.addWidget(self.garmentTree)
+        
+        self.treeDock.setWidget(self.garmentTree)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.treeDock)
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()
@@ -175,7 +181,6 @@ class CSRWidgets(QWidget):
   
         
     def changeCentralWidget(self, widgetLayout):
-       
         self.mainWidget = QWidget()
         self.mainWidget.setLayout(widgetLayout)
         self.mainWidget.setMinimumSize(1100, 800)
@@ -185,5 +190,6 @@ class CSRWidgets(QWidget):
         self.scrollWidget = QScrollArea()
         self.scrollWidget.setWidgetResizable(True)
         self.scrollWidget.setWidget(self.mainWidget)
+        self.scrollWidget.setAlignment(Qt.AlignTop)
         
         self.setCentralWidget(self.scrollWidget)
