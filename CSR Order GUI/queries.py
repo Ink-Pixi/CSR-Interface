@@ -8,7 +8,7 @@ class mysql_db():
             mysql_db.conn = mysql.connector.connect(user = 'AI_APP', password = 'rowsby01', host = 'wampserver', database = 'inkpixi', raise_on_warnings = True) 
             mysql_db.db = mysql_db.conn.cursor()
         except BaseException as e:
-            QMessageBox.critcal(self, 'Database Error', "Can not connect to the MySQL database: \n" + str(e), QMessageBox.Ok)
+            QMessageBox.critical(self, 'Database Error', "Can not connect to the MySQL database: \n" + str(e), QMessageBox.Ok)
         
         return mysql_db.db
     

@@ -1,16 +1,15 @@
-from PyQt5.QtCore import Qt,QObject
+from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTextEdit)
+from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
-    '''Doc - __init__ Constructor'''
     def __init__(self):
         super(MainWindow, self).__init__()
         
         self.setUpMenus()
        
-        CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default')) #Sets central widget on init.
+        CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self, 'default')) #Sets central widget on init.
         self.setWindowTitle("CSR Proving Ground")
         
         self.resize(1500, 900)
@@ -18,7 +17,7 @@ class MainWindow(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-        
+
     def setUpMenus(self):
         self.createMenus()
         self.createToolBars()
@@ -76,14 +75,14 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
 
-        dock = QDockWidget("Available Garment Sizes", self)
-        self.orderItem = QListWidget(dock)
-        self.orderItem.setMinimumWidth(350)
-        self.orderItem.setMaximumWidth(350)
+        self.dock = QDockWidget("Available Garment Sizes", self)
+        self.orderItem = QTreeWidget(dock)
+        #self.orderItem.setMinimumWidth(350)
+        #self.orderItem.setMaximumWidth(350)
         #self.orderItem.insertText(("more stuff"))
-        dock.setWidget(self.orderItem)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())
+        self.dock.setWidget(self.orderItem)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        self.viewMenu.addAction(self.dock.toggleViewAction())
         
     def btnSale_Click(self):
         btnName = self.sender()
@@ -124,10 +123,10 @@ class MainWindow(QMainWindow):
         self.grpBox[txtName].hide()
         
 if __name__ == '__main__':
-
     import sys
+
     app = QApplication(sys.argv)
-    #app.setStyle("Fusion")
+    app.setStyle("Fusion")
     mainWin = MainWindow()
     mainWin.show()
     sys.exit(app.exec_())
