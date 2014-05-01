@@ -156,21 +156,28 @@ class CSRWidgets(QWidget):
         self.garmentTree.setColumnCount(2)
         #self.garmentTree.setMinimumHeight(700)
         
-        parent = QTreeWidgetItem(self.garmentTree)
-        parent.setText(0, garment_name)
+        print(self.prt.text(0))
+        if self.prt.text(0) != sku_code:
+            self.prt = QTreeWidgetItem(self.garmentTree)
+            self.prt.setText(0, sku_code)
+        #self.prt.setText(0, sku_code)
+        
+        self.chld = QTreeWidgetItem(self.prt)
+        self.chld.setText(0, garment_name)
         
         for i in garm:
-            kiddo = QTreeWidgetItem(parent)
+            kiddo = QTreeWidgetItem(self.chld)
             kiddo.setText(0, i[1] + " " + i[2])
             le = QLineEdit(self.garmentTree)
             le.setMaximumWidth(30)
             self.garmentTree.setItemWidget(kiddo, 1, le)
         
-        self.garmentTree.show()
+        self.treeDock.show()
         self.vBox.addWidget(self.garmentTree)
         
         self.treeDock.setWidget(self.garmentTree)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.treeDock)
+        
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()

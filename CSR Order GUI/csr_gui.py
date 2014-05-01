@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget)
+from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
+                             QTreeWidgetItem)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
@@ -87,7 +88,8 @@ class MainWindow(QMainWindow):
         #Create a tree widget for use when the t-shirt is clicked.
         self.treeDock = QDockWidget("Order Items", self)
         self.garmentTree = QTreeWidget(self.treeDock)
-        self.garmentTree.hide()
+        self.prt = QTreeWidgetItem(self.garmentTree)
+        self.treeDock.hide()
         
     def btnSale_Click(self):
         btnName = self.sender()
