@@ -154,11 +154,6 @@ class CSRWidgets(QWidget):
         self.garmentTree.setColumnCount(2)
         #self.garmentTree.setMinimumHeight(700)
         
-        itSku = QTreeWidgetItemIterator(self.garmentTree)
- 
- 
-
-
         if self.garmentTree.topLevelItemCount() == 0:
             print("NEW PARENT NODE")
             sku = QTreeWidgetItem(self.garmentTree)
@@ -166,7 +161,7 @@ class CSRWidgets(QWidget):
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
             garmName.setText(0, garment_name)
-            print(sku.text(0))           
+            #print(sku.text(0))           
             #Create all the garment types for the node
             for i in garm:
                 kiddo = QTreeWidgetItem(garmName)
@@ -177,15 +172,17 @@ class CSRWidgets(QWidget):
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
                 kiddo.setExpanded(True)
-        else:       
+        else:
+            sku_match = 0       
+            itSku = QTreeWidgetItemIterator(self.garmentTree)            
             while itSku.value():
                 print(itSku.value().text(0))
                 if itSku.value().text(0) == sku_code:
                     sku_match = 1
+                itSku += 1
                 
             if sku_match == 1:
                 print("already", sku_code)
-                '''
                 #Create an iterator to iterate through all the elements in the tree.
                 itGarment = QTreeWidgetItemIterator(self.garmentTree)
                 #Create a list to hold all the elements in the tree for later reference.
@@ -206,24 +203,44 @@ class CSRWidgets(QWidget):
                 if garment_name + sku_code in ls:
                     print("already", garment_name)
                 else:
-                    #If the garment name does not exist we want to create a node for it. 
-                    garmName = QTreeWidgetItem(sku)
-                    garmName.setText(0, garment_name)
-                    print(sku.text(0))           
-                    #Create all the garment types for the node
-                    for i in garm:
-                        kiddo = QTreeWidgetItem(garmName)
-                        kiddo.setText(0, i[1] + " " + i[2])
-                        le = QLineEdit(self.garmentTree)
-                        le.setMaximumWidth(30)
-                        self.garmentTree.setItemWidget(kiddo, 1, le)
-                        sku.setExpanded(True)
-                        garmName.setExpanded(True)
-                        kiddo.setExpanded(True)  
-                '''
+                    itTest = QTreeWidgetItemIterator(self.garmentTree)
+                    while itTest.value().text(0) == sku_code:
+                        #If the garment name does not exist we want to create a node for it. 
+                        garmName = QTreeWidgetItem(itTest.value())
+                        garmName.setText(0, garment_name)
+                        print(itTest.value())           
+                        #Create all the garment types for the node
+                        for i in garm:
+                            kiddo = QTreeWidgetItem(garmName)
+                            kiddo.setText(0, i[1] + " " + i[2])
+                            le = QLineEdit(self.garmentTree)
+                            le.setMaximumWidth(30)
+                            self.garmentTree.setItemWidget(kiddo, 1, le)
+                            itTest.value().setExpanded(True)
+                            garmName.setExpanded(True)
+                            kiddo.setExpanded(True)  
+                        
+                        itTest += 1
+
             else:
                 print("New Sku Parent")
 
+                sku = QTreeWidgetItem(self.garmentTree)
+                sku.setText(0, sku_code)
+                #If the garment name does not exist we want to create a node for it. 
+                garmName = QTreeWidgetItem(sku)
+                garmName.setText(0, garment_name)
+                #print(sku.text(0))           
+                #Create all the garment types for the node
+                for i in garm:
+                    kiddo = QTreeWidgetItem(garmName)
+                    kiddo.setText(0, i[1] + " " + i[2])
+                    le = QLineEdit(self.garmentTree)
+                    le.setMaximumWidth(30)
+                    self.garmentTree.setItemWidget(kiddo, 1, le)
+                    sku.setExpanded(True)
+                    garmName.setExpanded(True)
+                    kiddo.setExpanded(True)
 
                        
 
