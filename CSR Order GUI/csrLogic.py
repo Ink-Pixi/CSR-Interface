@@ -181,7 +181,8 @@ class CSRWidgets(QWidget):
                 if itSku.value().text(0) == sku_code:
                     sku_match = 1
 
-                itSku.value().setExpanded(False)
+                if itSku.value().parent() != None:   
+                    itSku.value().setExpanded(False)
                 itSku += 1
 ####################################################################################
                 

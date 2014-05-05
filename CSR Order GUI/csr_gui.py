@@ -104,7 +104,13 @@ class MainWindow(QMainWindow):
     def btnHome_Click(self):
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default'))
         self.availableItems.clear()
-        #self.orderItem.clear()
+        itSku = QTreeWidgetItemIterator(self.garmentTree) 
+#################################################################################           
+        while itSku.value():
+            if itSku.value().parent() != None:   
+                itSku.value().setExpanded(False)
+            itSku += 1
+####################################################################################
         
     def btnSearch_Click(self):
         self.availableItems.clear()
