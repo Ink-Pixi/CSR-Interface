@@ -142,7 +142,9 @@ class CSRWidgets(QWidget):
    
         
 
-    def loadGarmentInfo(self,sku_code,garment_type,garment_name):      
+    def loadGarmentInfo(self,sku_code,garment_type,garment_name):
+        
+              
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
         columnList = ["Garment", "Quantity"]
         
@@ -152,54 +154,82 @@ class CSRWidgets(QWidget):
         self.garmentTree.setColumnCount(2)
         #self.garmentTree.setMinimumHeight(700)
         
-        if self.sku.text(0) != sku_code:
-            itSku = QTreeWidgetItemIterator(self.garmentTree)
-            lsSku = []
-            while itSku.value():
-                if itSku.value().parent() == None:
-                    if itSku.value().text(0) != None:
-                        lsSku.append(itSku.value().text(0))
-#                 if itSku.value() != sku_code:
-#                     self.sku.setExpanded(False)
-                itSku += 1            
-            if sku_code in lsSku:
-                print("already", sku_code)
-            else:
-                self.sku = QTreeWidgetItem(self.garmentTree)
-                self.sku.setText(0, sku_code)
-        
-        #Create an iterator to iterate through all the elements in the tree.
-        itGarment = QTreeWidgetItemIterator(self.garmentTree)
-        #Create a list to hold all the elements in the tree for later reference.
-        ls = []
-        #Open up iterator
-        while itGarment.value():
-            print(itGarment.value().text(0))
-            # if the node has a parent add it to the list
-            if itGarment.value().parent() != None:
-                ls.append(itGarment.value().text(0) + itGarment.value().parent().text(0))
-            #if the node does not equal the garment name passed in the we want to collapse it.
-            if itGarment.value().text(0) != garment_name:
-                itGarment.value().setExpanded(False)
-            itGarment += 1
-        #If the garment name is in the list created above we want to tell the user the item in already there and do nothing
-        #else, although it keeps collapsing the entire thing.
-        if garment_name + sku_code in ls:
-            print("already", garment_name)
-        else:
+        itSku = QTreeWidgetItemIterator(self.garmentTree)
+ 
+ 
+
+
+        if self.garmentTree.topLevelItemCount() == 0:
+            print("NEW PARENT NODE")
+            sku = QTreeWidgetItem(self.garmentTree)
+            sku.setText(0, sku_code)
             #If the garment name does not exist we want to create a node for it. 
-            self.garmName = QTreeWidgetItem(self.sku)
-            self.garmName.setText(0, garment_name)            
+            garmName = QTreeWidgetItem(sku)
+            garmName.setText(0, garment_name)
+            print(sku.text(0))           
             #Create all the garment types for the node
             for i in garm:
-                self.kiddo = QTreeWidgetItem(self.garmName)
-                self.kiddo.setText(0, i[1] + " " + i[2])
+                kiddo = QTreeWidgetItem(garmName)
+                kiddo.setText(0, i[1] + " " + i[2])
                 le = QLineEdit(self.garmentTree)
                 le.setMaximumWidth(30)
-                self.garmentTree.setItemWidget(self.kiddo, 1, le)
-                self.sku.setExpanded(True)
-                self.garmName.setExpanded(True)
-                self.kiddo.setExpanded(True)  
+                self.garmentTree.setItemWidget(kiddo, 1, le)
+                sku.setExpanded(True)
+                garmName.setExpanded(True)
+                kiddo.setExpanded(True)
+        else:       
+            while itSku.value():
+                print(itSku.value().text(0))
+                if itSku.value().text(0) == sku_code:
+                    sku_match = 1
+                
+            if sku_match == 1:
+                print("already", sku_code)
+                '''
+                #Create an iterator to iterate through all the elements in the tree.
+                itGarment = QTreeWidgetItemIterator(self.garmentTree)
+                #Create a list to hold all the elements in the tree for later reference.
+                ls = []
+                #Open up iterator
+                while itGarment.value():
+                    #print(itGarment.value().text(0))
+                    #print(sku_code)
+                    # if the node has a parent add it to the list
+                    if itGarment.value().parent() != None:
+                        ls.append(itGarment.value().text(0) + itGarment.value().parent().text(0))
+                    #if the node does not equal the garment name passed in the we want to collapse it.
+                    if itGarment.value().text(0) != garment_name:
+                        itGarment.value().setExpanded(False)
+                    itGarment += 1
+                #If the garment name is in the list created above we want to tell the user the item in already there and do nothing
+                #else, although it keeps collapsing the entire thing.
+                if garment_name + sku_code in ls:
+                    print("already", garment_name)
+                else:
+                    #If the garment name does not exist we want to create a node for it. 
+                    garmName = QTreeWidgetItem(sku)
+                    garmName.setText(0, garment_name)
+                    print(sku.text(0))           
+                    #Create all the garment types for the node
+                    for i in garm:
+                        kiddo = QTreeWidgetItem(garmName)
+                        kiddo.setText(0, i[1] + " " + i[2])
+                        le = QLineEdit(self.garmentTree)
+                        le.setMaximumWidth(30)
+                        self.garmentTree.setItemWidget(kiddo, 1, le)
+                        sku.setExpanded(True)
+                        garmName.setExpanded(True)
+                        kiddo.setExpanded(True)  
+                '''
+            else:
+                print("New Sku Parent")
+
+
+                       
+
+            
+        
+
                   
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        

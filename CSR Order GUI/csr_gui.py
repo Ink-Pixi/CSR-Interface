@@ -92,8 +92,8 @@ class MainWindow(QMainWindow):
         self.garmentTree = QTreeWidget(self.treeDock)
         self.garmentTree.setMaximumWidth(380)
         self.garmentTree.setMinimumWidth(380)
-        self.sku = QTreeWidgetItem(self.garmentTree)
-        self.garmName = QTreeWidgetItem()
+        #self.sku = QTreeWidgetItem(self.garmentTree)
+        #self.garmName = QTreeWidgetItem()
         self.treeDock.hide()
         
     def btnSale_Click(self):
