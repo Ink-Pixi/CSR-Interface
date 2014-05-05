@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
-                             QTreeWidgetItem)
+                             QTreeWidgetItem, QTreeWidgetItemIterator)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
@@ -75,6 +75,7 @@ class MainWindow(QMainWindow):
         dock.setWidget(self.availableItems)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
         self.viewMenu.addAction(dock.toggleViewAction())
+        dock.hide()
 
         self.dock = QDockWidget("Available Garment Sizes", self)
         self.orderItem = QTreeWidget(dock)
@@ -84,11 +85,15 @@ class MainWindow(QMainWindow):
         self.dock.setWidget(self.orderItem)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
         self.viewMenu.addAction(self.dock.toggleViewAction())
+        self.dock.hide()
         
         #Create a tree widget for use when the t-shirt is clicked.
         self.treeDock = QDockWidget("Order Items", self)
         self.garmentTree = QTreeWidget(self.treeDock)
-        self.prt = QTreeWidgetItem(self.garmentTree)
+        self.garmentTree.setMaximumWidth(380)
+        self.garmentTree.setMinimumWidth(380)
+        self.sku = QTreeWidgetItem(self.garmentTree)
+        self.garmName = QTreeWidgetItem()
         self.treeDock.hide()
         
     def btnSale_Click(self):
@@ -114,21 +119,7 @@ class MainWindow(QMainWindow):
         button = self.sender()
         txtItem = button.uniqueId
         CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1],self.currentInfo[txtItem][0])
-        
-    def showOrder(self):
-        btn = self.sender()
-        txtName = btn.objectName()
-        print(txtName)
-        print(self.grpBox[txtName])
-        self.grpBox[txtName].show()
-        
-       
-    def hideOrder(self):
-        btn = self.sender()
-        txtName = btn.objectName()
-        print(txtName)
-        self.grpBox[txtName].hide()
-        
+        #self.garmName.setExpanded(False)
 if __name__ == '__main__':
     import sys
 

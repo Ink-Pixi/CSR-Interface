@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QDockWidget, QTreeWidget, QTreeWidgetItem)
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QMessageBox)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -107,7 +107,6 @@ class CSRWidgets(QWidget):
         hFrame.setLayout(hBox)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
         
-        print(self.currentInfo)
         
         
         
@@ -127,7 +126,7 @@ class CSRWidgets(QWidget):
             icons[(i)].uniqueId = str(i[7])
             icons[(i)].clicked.connect(self.itemClicked_Click)
             hBox.addWidget(icons[(i)])
-            print("//wampserver/" + str(i[10]))
+            #print("//wampserver/" + str(i[10]))
         
         
         hBox.addStretch(1)
@@ -144,39 +143,70 @@ class CSRWidgets(QWidget):
         
 
     def loadGarmentInfo(self,sku_code,garment_type,garment_name):      
-        #self.orderItem.clear()
-        
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
-        ls = ["Garment", "Quantity"]
-        
+        columnList = ["Garment", "Quantity"]
         
         #self.garmentTree.header().close()
-        self.garmentTree.setHeaderLabels(ls)
+        self.garmentTree.setHeaderLabels(columnList)
         self.garmentTree.header().resizeSection(0, 275)
         self.garmentTree.setColumnCount(2)
         #self.garmentTree.setMinimumHeight(700)
         
-        print(self.prt.text(0))
-        if self.prt.text(0) != sku_code:
-            self.prt = QTreeWidgetItem(self.garmentTree)
-            self.prt.setText(0, sku_code)
-        #self.prt.setText(0, sku_code)
+        if self.sku.text(0) != sku_code:
+            itSku = QTreeWidgetItemIterator(self.garmentTree)
+            lsSku = []
+            while itSku.value():
+                if itSku.value().parent() == None:
+                    if itSku.value().text(0) != None:
+                        lsSku.append(itSku.value().text(0))
+#                 if itSku.value() != sku_code:
+#                     self.sku.setExpanded(False)
+                itSku += 1            
+            if sku_code in lsSku:
+                print("already", sku_code)
+            else:
+                self.sku = QTreeWidgetItem(self.garmentTree)
+                self.sku.setText(0, sku_code)
         
-        self.chld = QTreeWidgetItem(self.prt)
-        self.chld.setText(0, garment_name)
-        
-        for i in garm:
-            kiddo = QTreeWidgetItem(self.chld)
-            kiddo.setText(0, i[1] + " " + i[2])
-            le = QLineEdit(self.garmentTree)
-            le.setMaximumWidth(30)
-            self.garmentTree.setItemWidget(kiddo, 1, le)
-        
+        #Create an iterator to iterate through all the elements in the tree.
+        itGarment = QTreeWidgetItemIterator(self.garmentTree)
+        #Create a list to hold all the elements in the tree for later reference.
+        ls = []
+        #Open up iterator
+        while itGarment.value():
+            print(itGarment.value().text(0))
+            # if the node has a parent add it to the list
+            if itGarment.value().parent() != None:
+                ls.append(itGarment.value().text(0) + itGarment.value().parent().text(0))
+            #if the node does not equal the garment name passed in the we want to collapse it.
+            if itGarment.value().text(0) != garment_name:
+                itGarment.value().setExpanded(False)
+            itGarment += 1
+        #If the garment name is in the list created above we want to tell the user the item in already there and do nothing
+        #else, although it keeps collapsing the entire thing.
+        if garment_name + sku_code in ls:
+            print("already", garment_name)
+        else:
+            #If the garment name does not exist we want to create a node for it. 
+            self.garmName = QTreeWidgetItem(self.sku)
+            self.garmName.setText(0, garment_name)            
+            #Create all the garment types for the node
+            for i in garm:
+                self.kiddo = QTreeWidgetItem(self.garmName)
+                self.kiddo.setText(0, i[1] + " " + i[2])
+                le = QLineEdit(self.garmentTree)
+                le.setMaximumWidth(30)
+                self.garmentTree.setItemWidget(self.kiddo, 1, le)
+                self.sku.setExpanded(True)
+                self.garmName.setExpanded(True)
+                self.kiddo.setExpanded(True)  
+                  
         self.treeDock.show()
+        self.viewMenu.addAction(self.treeDock.toggleViewAction())        
         self.vBox.addWidget(self.garmentTree)
         
         self.treeDock.setWidget(self.garmentTree)
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.treeDock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.treeDock)
         
     def undo(self):
         print("this will \"undo\" items added to the order.")
