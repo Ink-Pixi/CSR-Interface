@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
                              QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QMessageBox)
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QBrush
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
 
@@ -58,13 +58,13 @@ class CSRWidgets(QWidget):
                                triggered=self.close)
 
         self.aboutAct = QAction("&About", self, statusTip="Show the application's About box", triggered=self.about)  
-        self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
-                                 triggered=self.btnSearch_Click)
+        #self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
+        #                         triggered=self.btnSearch_Click)
         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
                                triggered=self.btnHome_Click)
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
                                statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
-        self.enterAct = QAction(self, shortcut=Qt.Key_Enter, triggered=self.btnSearch_Click)
+        #self.enterAct = QAction(self, shortcut=Qt.Key_Enter, triggered=self.btnSearch_Click)
   
    
    
@@ -146,11 +146,12 @@ class CSRWidgets(QWidget):
         
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
-        columnList = ["Garment", "Quantity"]
+        columnList = ["Garment", "Total", "Quantity"]
         
         #Set tree header/title stuff
         self.garmentTree.setHeaderLabels(columnList)
         self.garmentTree.header().resizeSection(0, 275)
+
         self.garmentTree.setColumnCount(2)
        
         #If there are no nodes in this tree yet, create the first one
@@ -161,6 +162,10 @@ class CSRWidgets(QWidget):
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
             garmName.setText(0, garment_name)
+            garmName.setBackground(0, QBrush(Qt.gray))
+            self.lblTotal = QLabel("blah")
+            self.lblTotal.setMaximumWidth(30)
+            self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
           
             #Create all the garment types for the first node
             for i in garm:
@@ -168,6 +173,7 @@ class CSRWidgets(QWidget):
                 kiddo.setText(0, i[1] + " " + i[2])
                 le = QLineEdit(self.garmentTree)
                 le.setMaximumWidth(30)
+                le.textChanged.connect(CSRWidgets.sumQuantity)
                 self.garmentTree.setItemWidget(kiddo, 1, le)
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
@@ -220,12 +226,17 @@ class CSRWidgets(QWidget):
                             #If the garment name does not exist we want to create a node for it. 
                             garmName = QTreeWidgetItem(itSizes.value())
                             garmName.setText(0, garment_name)          
+                            garmName.setBackground(0, QBrush(Qt.gray))
+                            self.lblTotal = QLabel(self.garmentTree)
+                            self.lblTotal.setMaximumWidth(30)
+                            self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
                             #Create all the garment types for the node
                             for i in garm:
                                 kiddo = QTreeWidgetItem(garmName)
                                 kiddo.setText(0, i[1] + " " + i[2])
                                 le = QLineEdit(self.garmentTree)
                                 le.setMaximumWidth(30)
+                                le.textChanged.connect(CSRWidgets.sumQuantity)
                                 self.garmentTree.setItemWidget(kiddo, 1, le)
                                 itSizes.value().setExpanded(True)
                                 garmName.setExpanded(True)
@@ -242,13 +253,17 @@ class CSRWidgets(QWidget):
                 #If the garment name does not exist we want to create a node for it. 
                 garmName = QTreeWidgetItem(sku)
                 garmName.setText(0, garment_name)
-         
+                garmName.setBackground(0, QBrush(Qt.gray))
+                self.lblTotal = QLabel(self.garmentTree)
+                self.lblTotal.setMaximumWidth(30)
+                self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
                 #Create all the garment types for the node
                 for i in garm:
                     kiddo = QTreeWidgetItem(garmName)
                     kiddo.setText(0, i[1] + " " + i[2])
                     le = QLineEdit(self.garmentTree)
                     le.setMaximumWidth(30)
+                    le.textChanged.connect(CSRWidgets.sumQuantity)
                     self.garmentTree.setItemWidget(kiddo, 1, le)
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
@@ -291,3 +306,7 @@ class CSRWidgets(QWidget):
         self.scrollWidget.setAlignment(Qt.AlignTop)
         
         self.setCentralWidget(self.scrollWidget)
+        
+    def sumQuantity(self):
+        print("number changed")
+        CSRWidgets.lblTotal = "8"
