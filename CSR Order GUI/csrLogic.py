@@ -153,31 +153,42 @@ class CSRWidgets(QWidget):
         self.garmentTree.header().resizeSection(0, 275)
 
         self.garmentTree.setColumnCount(2)
-       
+        
+        CSRWidgets.lblTotal = {}
         #If there are no nodes in this tree yet, create the first one
         if self.garmentTree.topLevelItemCount() == 0:
             print("NEW PARENT NODE")
             sku = QTreeWidgetItem(self.garmentTree)
             sku.setText(0, sku_code)
+            sku.setBackground(0, QBrush(Qt.lightGray))
+            sku.setBackground(1, QBrush(Qt.lightGray))
+            sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
             garmName.setText(0, garment_name)
-            garmName.setBackground(0, QBrush(Qt.gray))
-            self.lblTotal = QLabel("blah")
-            self.lblTotal.setMaximumWidth(30)
-            self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
+            garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+            CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel("blah")
+            CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+
+            
+            
+            self.garmentTree.setItemWidget(garmName, 1, CSRWidgets.lblTotal[str(sku_code + garment_name)])
           
             #Create all the garment types for the first node
             for i in garm:
                 kiddo = QTreeWidgetItem(garmName)
                 kiddo.setText(0, i[1] + " " + i[2])
                 le = QLineEdit(self.garmentTree)
+                le.setObjectName(sku_code + "~" + garment_name + "~" + i[2])
                 le.setMaximumWidth(30)
-                le.textChanged.connect(CSRWidgets.sumQuantity)
+                le.textChanged.connect(lambda: CSRWidgets.sumQuantity(self, str(sku_code + garment_name)))
+                le.setObjectName(sku_code + "~" + garment_name + "~" + i[2])
                 self.garmentTree.setItemWidget(kiddo, 1, le)
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
                 kiddo.setExpanded(True)
+                print(le.objectName())
+
                 
                 
         #If items already exist in the tree, do stuff depending on what sku/garment was clicked.
@@ -226,17 +237,17 @@ class CSRWidgets(QWidget):
                             #If the garment name does not exist we want to create a node for it. 
                             garmName = QTreeWidgetItem(itSizes.value())
                             garmName.setText(0, garment_name)          
-                            garmName.setBackground(0, QBrush(Qt.gray))
-                            self.lblTotal = QLabel(self.garmentTree)
-                            self.lblTotal.setMaximumWidth(30)
-                            self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
+                            garmName.setFont(0, QFont("Helvetica",10,QFont.Bold))
+                            CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                            CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                            self.garmentTree.setItemWidget(garmName, 1, CSRWidgets.lblTotal[str(sku_code + garment_name)])
                             #Create all the garment types for the node
                             for i in garm:
                                 kiddo = QTreeWidgetItem(garmName)
                                 kiddo.setText(0, i[1] + " " + i[2])
                                 le = QLineEdit(self.garmentTree)
                                 le.setMaximumWidth(30)
-                                le.textChanged.connect(CSRWidgets.sumQuantity)
+                                le.textChanged.connect(lambda: CSRWidgets.sumQuantity(self, str(sku_code + garment_name)))
                                 self.garmentTree.setItemWidget(kiddo, 1, le)
                                 itSizes.value().setExpanded(True)
                                 garmName.setExpanded(True)
@@ -250,20 +261,23 @@ class CSRWidgets(QWidget):
             else:
                 sku = QTreeWidgetItem(self.garmentTree)
                 sku.setText(0, sku_code)
+                sku.setBackground(0, QBrush(Qt.lightGray))
+                sku.setBackground(1, QBrush(Qt.lightGray))
+                sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
                 #If the garment name does not exist we want to create a node for it. 
                 garmName = QTreeWidgetItem(sku)
                 garmName.setText(0, garment_name)
-                garmName.setBackground(0, QBrush(Qt.gray))
-                self.lblTotal = QLabel(self.garmentTree)
-                self.lblTotal.setMaximumWidth(30)
-                self.garmentTree.setItemWidget(garmName, 1, self.lblTotal)
+                garmName.setFont(0, QFont("Helvetica",10,QFont.Bold))
+                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                self.garmentTree.setItemWidget(garmName, 1, CSRWidgets.lblTotal[str(sku_code + garment_name)])
                 #Create all the garment types for the node
                 for i in garm:
                     kiddo = QTreeWidgetItem(garmName)
                     kiddo.setText(0, i[1] + " " + i[2])
                     le = QLineEdit(self.garmentTree)
                     le.setMaximumWidth(30)
-                    le.textChanged.connect(CSRWidgets.sumQuantity)
+                    le.textChanged.connect(lambda: CSRWidgets.sumQuantity(self, str(sku_code + garment_name)))
                     self.garmentTree.setItemWidget(kiddo, 1, le)
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
@@ -307,6 +321,6 @@ class CSRWidgets(QWidget):
         
         self.setCentralWidget(self.scrollWidget)
         
-    def sumQuantity(self):
-        print("number changed")
-        CSRWidgets.lblTotal = "8"
+    def sumQuantity(self, something):
+        print(something)
+        CSRWidgets.lblTotal[something].setText("22")
