@@ -62,7 +62,7 @@ class mysql_db():
     def garmentInfo(self, sku_code, garment_type):
         gi = mysql_db.mysql_connect(self)
         gi.execute("""
-        SELECT inventories_code,ia.inventories_accessories_details, io.inventories_options_name 
+        SELECT inventories_code,ia.inventories_accessories_details, io.inventories_options_name
         FROM `inventories` inv 
         LEFT JOIN inventories_cache ic on ic.inventories_id = inv.inventories_id
         LEFT JOIN inventories_accessories ia on inventories_accessories_id = ic.inventories_global_accessories_ids

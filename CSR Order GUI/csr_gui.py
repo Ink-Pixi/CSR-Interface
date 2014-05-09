@@ -90,8 +90,8 @@ class MainWindow(QMainWindow):
         #Create a tree widget for use when the t-shirt is clicked.
         self.treeDock = QDockWidget("Order Items", self)
         self.garmentTree = QTreeWidget(self.treeDock)
-        self.garmentTree.setMaximumWidth(380)
-        self.garmentTree.setMinimumWidth(380)
+        self.garmentTree.setMaximumWidth(480)
+        self.garmentTree.setMinimumWidth(480)
         #self.sku = QTreeWidgetItem(self.garmentTree)
         #self.garmName = QTreeWidgetItem()
         self.treeDock.hide()
