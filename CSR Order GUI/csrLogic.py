@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
                              QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QMessageBox)
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QBrush, QIntValidator
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QBrush, QIntValidator, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
 
@@ -177,14 +177,18 @@ class CSRWidgets(QWidget):
         #print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
-        columnList = ["Garment", "Size", "Quantity"]
+        columnList = ["Design", "Size","Price", "Qty",""]
         
         #Set tree header/title stuff
         self.garmentTree.setHeaderLabels(columnList)
-        self.garmentTree.header().resizeSection(0, 300)
+        self.garmentTree.header().resizeSection(0, 280)
         self.garmentTree.header().resizeSection(1, 75)
+        self.garmentTree.header().resizeSection(2, 45)
+        self.garmentTree.header().resizeSection(3, 30)
+        self.garmentTree.header().resizeSection(4, 10)
 
-        self.garmentTree.setColumnCount(3)
+        self.garmentTree.setColumnCount(5)
+        
         
         
         #If there are no nodes in this tree yet, create the first one
@@ -194,24 +198,47 @@ class CSRWidgets(QWidget):
             
             sku = QTreeWidgetItem(self.garmentTree)
             sku.setText(0, sku_code)
-            sku.setBackground(0, QBrush(Qt.lightGray))
-            sku.setBackground(1, QBrush(Qt.lightGray))
-            sku.setBackground(2, QBrush(Qt.lightGray))
+            sku.setBackground(0, QColor(180,180,180,127))
+            sku.setBackground(1, QColor(180,180,180,127))
+            sku.setBackground(2, QColor(180,180,180,127))
+            sku.setBackground(3, QColor(180,180,180,127))
+            sku.setBackground(4, QColor(180,180,180,127))
             sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
+            
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
             garmName.setText(0, garment_name)
             garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+            garmName.setBackground(0, QColor(230,230,230,127))
+            garmName.setBackground(1, QColor(230,230,230,127))
+            garmName.setBackground(2, QColor(230,230,230,127))
+            garmName.setBackground(3, QColor(230,230,230,127))
+            garmName.setBackground(4, QColor(230,230,230,127))
+            removeSku = QToolButton(self)
+            removeSku.setIcon(QIcon("icon/close-widget.png"))
+            removeSku.setIconSize(QSize(14, 14))
+            removeSku.setAutoRaise(True)
+            removeSku.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+            
+            removeGarment = QToolButton(self)
+            removeGarment.setIcon(QIcon("icon/close-widget.png"))
+            removeGarment.setIconSize(QSize(14, 14))
+            removeGarment.setAutoRaise(True)
+            removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+
             CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel()
             CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
             CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
-               
-            self.garmentTree.setItemWidget(garmName, 2, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+            
+            self.garmentTree.setItemWidget(sku, 4, removeSku)
+            self.garmentTree.setItemWidget(garmName, 4, removeGarment)              
+            self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
             CSRWidgets.le = {}
             #Create all the garment types for the first node
             for i in garm:
                 kiddo = QTreeWidgetItem(garmName)
                 kiddo.setText(0, i[1])
+                kiddo.setText(2, str(i[3]))
                 kiddo.setText(1, i[2])
                 CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
                 CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
@@ -220,7 +247,7 @@ class CSRWidgets(QWidget):
                 #this is making a separate lambda connection for each loop using the 'make_callback' function below.
                 #lambda in a loop only remembers the last value given to it, hence the need for a separate function to create multiple lambda connections.
                 CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
-                self.garmentTree.setItemWidget(kiddo, 2, CSRWidgets.le[sku_code + i[1] + i[2]])
+                self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
                 kiddo.setExpanded(True)
@@ -275,23 +302,36 @@ class CSRWidgets(QWidget):
                             garmName = QTreeWidgetItem(itSizes.value())
                             garmName.setText(0, garment_name)          
                             garmName.setFont(0, QFont("Helvetica",10,QFont.Bold))
+                            garmName.setBackground(0, QColor(230,230,230,127))
+                            garmName.setBackground(1, QColor(230,230,230,127))
+                            garmName.setBackground(2, QColor(230,230,230,127))
+                            garmName.setBackground(3, QColor(230,230,230,127))
+                            garmName.setBackground(4, QColor(230,230,230,127))
+                            
+                            removeGarment = QToolButton(self)
+                            removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                            removeGarment.setIconSize(QSize(14, 14))
+                            removeGarment.setAutoRaise(True)
+                            removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
                             CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
                             CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
                             CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
                             
-                            self.garmentTree.setItemWidget(garmName, 2, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                            self.garmentTree.setItemWidget(garmName, 4, removeGarment)
+                            self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
                             #Create all the garment types for the node
                             #CSRWidgets.le = {}
                             for i in garm:
                                 kiddo = QTreeWidgetItem(garmName)
                                 kiddo.setText(0, i[1])
+                                kiddo.setText(2,str(i[3]))
                                 kiddo.setText(1, i[2])
                                 CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
                                 CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
                                 CSRWidgets.le[sku_code + i[1] + i[2]].setValidator(QIntValidator(CSRWidgets.le[sku_code + i[1] + i[2]]))
                                 CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
                                 print(sku_code + i[1] + i[2])   
-                                self.garmentTree.setItemWidget(kiddo, 2, CSRWidgets.le[sku_code + i[1] + i[2]])
+                                self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
                                 itSizes.value().setExpanded(True)
                                 garmName.setExpanded(True)
                                 kiddo.setExpanded(True)
@@ -304,23 +344,45 @@ class CSRWidgets(QWidget):
             else:
                 sku = QTreeWidgetItem(self.garmentTree)
                 sku.setText(0, sku_code)
-                sku.setBackground(0, QBrush(Qt.lightGray))
-                sku.setBackground(1, QBrush(Qt.lightGray))
-                sku.setBackground(2, QBrush(Qt.lightGray))
+                sku.setBackground(0, QColor(180,180,180,127))
+                sku.setBackground(1, QColor(180,180,180,127))
+                sku.setBackground(2, QColor(180,180,180,127))
+                sku.setBackground(3, QColor(180,180,180,127))
+                sku.setBackground(4, QColor(180,180,180,127))
                 sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
                 #If the garment name does not exist we want to create a node for it. 
                 garmName = QTreeWidgetItem(sku)
                 garmName.setText(0, garment_name)
                 garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
-                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel()
-                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30) 
-                CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))  
-                self.garmentTree.setItemWidget(garmName, 2, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                garmName.setBackground(0, QColor(230,230,230,127))
+                garmName.setBackground(1, QColor(230,230,230,127))
+                garmName.setBackground(2, QColor(230,230,230,127))
+                garmName.setBackground(3, QColor(230,230,230,127))
+                garmName.setBackground(4, QColor(230,230,230,127))
+                removeSku = QToolButton(self)
+                removeSku.setIcon(QIcon("icon/close-widget.png"))
+                removeSku.setIconSize(QSize(14, 14))
+                removeSku.setAutoRaise(True)
+                removeSku.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                
+                removeGarment = QToolButton(self)
+                removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                removeGarment.setIconSize(QSize(14, 14))
+                removeGarment.setAutoRaise(True)
+                removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
+                
+                self.garmentTree.setItemWidget(sku, 4, removeSku)
+                self.garmentTree.setItemWidget(garmName, 4, removeGarment)  
+                self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
                 #CSRWidgets.le = {}
                 #Create all the garment types for the first node
                 for i in garm:
                     kiddo = QTreeWidgetItem(garmName)
                     kiddo.setText(0, i[1])
+                    kiddo.setText(2, str(i[3]))
                     kiddo.setText(1, i[2])
                     CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
                     CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
@@ -329,11 +391,11 @@ class CSRWidgets(QWidget):
                     #this is making a separate lambda connection for each loop using the 'make_callback' function below.
                     #lambda in a loop only remembers the last value given to it, hence the need for a separate function to create multiple lambda connections.
                     CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
-                    self.garmentTree.setItemWidget(kiddo, 2, CSRWidgets.le[sku_code + i[1] + i[2]])
+                    self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
                     kiddo.setExpanded(True)
-
+ 
                   
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        
@@ -343,7 +405,13 @@ class CSRWidgets(QWidget):
         self.addDockWidget(Qt.RightDockWidgetArea, self.treeDock)
  
  
- 
+    def remove_widget(self):
+        btn = self.sender()
+        btn.setFocus()
+        root = self.garmentTree.invisibleRootItem()
+        for item in self.garmentTree.selectedItems():
+            root.removeChild(item)
+        
  
     #This function is needed for creating multiple lambda connections in a loop.
     def make_callback(self,sku_code,garment_name):

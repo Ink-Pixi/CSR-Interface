@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
         #self.garmName = QTreeWidgetItem()
         self.treeDock.hide()
         
+        
     def btnSale_Click(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
