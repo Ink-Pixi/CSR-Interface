@@ -173,6 +173,18 @@ class CSRWidgets(QWidget):
         self.setCentralWidget(self.scrollWidget)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     def loadGarmentInfo(self,sku_code,garment_type,garment_name):
         #print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
@@ -208,7 +220,9 @@ class CSRWidgets(QWidget):
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
             garmName.setText(0, garment_name)
+            garmName.setText(3, "")
             garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+            garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
             garmName.setBackground(0, QColor(230,230,230,127))
             garmName.setBackground(1, QColor(230,230,230,127))
             garmName.setBackground(2, QColor(230,230,230,127))
@@ -240,14 +254,10 @@ class CSRWidgets(QWidget):
                 kiddo.setText(0, i[1])
                 kiddo.setText(2, str(i[3]))
                 kiddo.setText(1, i[2])
-                CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
-                CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
-                CSRWidgets.le[sku_code + i[1] + i[2]].setValidator(QIntValidator(CSRWidgets.le[sku_code + i[1] + i[2]]))
-                print(sku_code + i[1] + i[2])                
-                #this is making a separate lambda connection for each loop using the 'make_callback' function below.
-                #lambda in a loop only remembers the last value given to it, hence the need for a separate function to create multiple lambda connections.
-                CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
-                self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
+                kiddo.setText(3,"")
+                kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
+                kiddo.setText(4,"      -")
+
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
                 kiddo.setExpanded(True)
@@ -300,8 +310,12 @@ class CSRWidgets(QWidget):
                         if itSizes.value().text(0) == sku_code:
                             #If the garment name does not exist we want to create a node for it. 
                             garmName = QTreeWidgetItem(itSizes.value())
-                            garmName.setText(0, garment_name)          
-                            garmName.setFont(0, QFont("Helvetica",10,QFont.Bold))
+                            garmName.setText(0, garment_name)
+                            garmName.setText(3, "")
+                            garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                            garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+                            
+                            
                             garmName.setBackground(0, QColor(230,230,230,127))
                             garmName.setBackground(1, QColor(230,230,230,127))
                             garmName.setBackground(2, QColor(230,230,230,127))
@@ -324,14 +338,11 @@ class CSRWidgets(QWidget):
                             for i in garm:
                                 kiddo = QTreeWidgetItem(garmName)
                                 kiddo.setText(0, i[1])
-                                kiddo.setText(2,str(i[3]))
+                                kiddo.setText(2, str(i[3]))
                                 kiddo.setText(1, i[2])
-                                CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
-                                CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
-                                CSRWidgets.le[sku_code + i[1] + i[2]].setValidator(QIntValidator(CSRWidgets.le[sku_code + i[1] + i[2]]))
-                                CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
-                                print(sku_code + i[1] + i[2])   
-                                self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
+                                kiddo.setText(3,"")
+                                kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
+                                kiddo.setText(4,"      -")
                                 itSizes.value().setExpanded(True)
                                 garmName.setExpanded(True)
                                 kiddo.setExpanded(True)
@@ -353,7 +364,9 @@ class CSRWidgets(QWidget):
                 #If the garment name does not exist we want to create a node for it. 
                 garmName = QTreeWidgetItem(sku)
                 garmName.setText(0, garment_name)
+                garmName.setText(3, "")
                 garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
                 garmName.setBackground(0, QColor(230,230,230,127))
                 garmName.setBackground(1, QColor(230,230,230,127))
                 garmName.setBackground(2, QColor(230,230,230,127))
@@ -384,14 +397,9 @@ class CSRWidgets(QWidget):
                     kiddo.setText(0, i[1])
                     kiddo.setText(2, str(i[3]))
                     kiddo.setText(1, i[2])
-                    CSRWidgets.le[sku_code + i[1] + i[2]] = QLineEdit(self.garmentTree)
-                    CSRWidgets.le[sku_code + i[1] + i[2]].setMaximumWidth(30)
-                    CSRWidgets.le[sku_code + i[1] + i[2]].setValidator(QIntValidator(CSRWidgets.le[sku_code + i[1] + i[2]]))
-                    print(sku_code + i[1] + i[2])   
-                    #this is making a separate lambda connection for each loop using the 'make_callback' function below.
-                    #lambda in a loop only remembers the last value given to it, hence the need for a separate function to create multiple lambda connections.
-                    CSRWidgets.le[sku_code + i[1] + i[2]].textChanged.connect(CSRWidgets.make_callback(self, sku_code, garment_name))
-                    self.garmentTree.setItemWidget(kiddo, 3, CSRWidgets.le[sku_code + i[1] + i[2]])
+                    kiddo.setText(3,"")
+                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
+                    kiddo.setText(4,"      -")
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
                     kiddo.setExpanded(True)
@@ -413,20 +421,47 @@ class CSRWidgets(QWidget):
             root.removeChild(item)
         
  
-    #This function is needed for creating multiple lambda connections in a loop.
+    #This function is needed for creating multiple lambda connections in a loop
+    #NOT USING THIS FUNCTION STARTING WITH BRANCH 4.
     def make_callback(self,sku_code,garment_name):
         return lambda: CSRWidgets.sumQuantity(self, sku_code, garment_name)
 
       
-    def sumQuantity(self, skuCode, garmentName):
-        gm = QTreeWidgetItemIterator(self.garmentTree)
-        allVals = 0
-        while gm.value():
-            #print(gm.value().text(0))
-            if gm.value().parent() != None and gm.value().parent().text(0) == garmentName and gm.value().parent().parent().text(0) == skuCode:
-                #print(gm.value().parent().parent().text(0))
-                if CSRWidgets.le[skuCode + str(gm.value().text(0)) + str(gm.value().text(1))].text() != '':
-                    allVals += int(CSRWidgets.le[skuCode + str(gm.value().text(0)) + str(gm.value().text(1))].text())
-            gm += 1
-        CSRWidgets.lblTotal[str(skuCode + garmentName)].setNum(allVals)
+    def sumQuantity(self,column):
+        if self.text(column):
+            #If this row has no Quantity yet, set it to zero.
+            if self.text(3) == "":
+                newNum = 0
+            else:
+                newNum = int(self.text(3))
+            if self.parent().text(3) == "":
+                newSum = 0
+            else:
+                newSum = int(self.parent().text(3))
+                               
+            #If user clicks on the "-" sign in column 4, subtract 1
+            if column == 4:
+                if newNum > 0:
+                    newNum = newNum - 1
+                    if newSum > 0:                    
+                        newSum = newSum - 1
+                    
+            #else if the user clicks anywhere BUT column 4, add number   
+            else:
+                newNum = newNum + 1                  
+                newSum = newSum + 1
+
+            #prepare the numbers for output    
+            if newNum == 0:
+                newNum = ""
+            else:
+                newNum = str(newNum)
+                
+            if newSum == 0:
+                newSum = ""
+            else:
+                newSum = str(newSum)
+            #Outpu    
+            self.parent().setText(3,newSum)
+            self.setText(3,newNum)
 
