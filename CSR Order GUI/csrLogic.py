@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QMessageBox)
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTextEdit, QGroupBox)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QBrush, QIntValidator, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
+from builtins import super
 
 
 class CSRWidgets(QWidget):
     def __init__(self):
-        super(CSRWidgets, self).__init__()    
+        super(self, self).__init__()    
    
     def createDesignButtons(self, qryId):
         btnLayout = QGridLayout()       
@@ -48,10 +49,6 @@ class CSRWidgets(QWidget):
 
         return btnLayout
  
-
-
-
-  
     def createActions(self):
 
         self.quitAct = QAction(QIcon('icon/exit.png'), "&Quit", self, shortcut="Ctrl+Q", statusTip="Quit the application", 
@@ -65,11 +62,6 @@ class CSRWidgets(QWidget):
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
                                statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
         #self.enterAct = QAction(self, shortcut=Qt.Key_Enter, triggered=self.btnSearch_Click)
-  
-   
-   
-   
-   
         
     def loadDesignItem(self, sku_code):
         self.availableItems.clear()
@@ -131,33 +123,24 @@ class CSRWidgets(QWidget):
         
         hBox.addStretch(1)
         hBox.setAlignment(self, Qt.AlignTop)
+        
+        CSRWidgets.teOrderDetails = QTextEdit()
+        CSRWidgets.teOrderDetails.setReadOnly(True)
+        CSRWidgets.teOrderDetails.setText("Testing.")
+        CSRWidgets.teOrderDetails.setVisible(False)
+        
         self.vBox.addWidget(hFrame)
+        self.vBox.addWidget(CSRWidgets.teOrderDetails)
         self.vBox.addStretch(1)
         
+
+        
         CSRWidgets.changeCentralWidget(self, self.vBox)
-        
-   
-   
-   
-   
-        
-
-
- 
- 
- 
- 
- 
         
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()
   
-  
-  
-  
-  
-        
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
         self.mainWidget.setLayout(widgetLayout)
@@ -171,19 +154,6 @@ class CSRWidgets(QWidget):
         self.scrollWidget.setAlignment(Qt.AlignTop)
         
         self.setCentralWidget(self.scrollWidget)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def loadGarmentInfo(self,sku_code,garment_type,garment_name):
         #print(garment_type)
@@ -411,7 +381,9 @@ class CSRWidgets(QWidget):
         
         self.treeDock.setWidget(self.garmentTree)
         self.addDockWidget(Qt.RightDockWidgetArea, self.treeDock)
- 
+        
+        CSRWidgets.teOrderDetails.setVisible(True)
+        CSRWidgets.teOrderDetails.append("Added Item.")
  
     def remove_widget(self):
         btn = self.sender()
@@ -420,14 +392,14 @@ class CSRWidgets(QWidget):
         for item in self.garmentTree.selectedItems():
             root.removeChild(item)
         
- 
     #This function is needed for creating multiple lambda connections in a loop
     #NOT USING THIS FUNCTION STARTING WITH BRANCH 4.
     def make_callback(self,sku_code,garment_name):
         return lambda: CSRWidgets.sumQuantity(self, sku_code, garment_name)
 
       
-    def sumQuantity(self,column):
+    def sumQuantity(self, column):
+
         if self.text(column):
             #If this row has no Quantity yet, set it to zero.
             if self.text(3) == "":
@@ -438,7 +410,7 @@ class CSRWidgets(QWidget):
                 newSum = 0
             else:
                 newSum = int(self.parent().text(3))
-                               
+                                               
             #If user clicks on the "-" sign in column 4, subtract 1
             if column == 4:
                 if newNum > 0:
@@ -461,7 +433,25 @@ class CSRWidgets(QWidget):
                 newSum = ""
             else:
                 newSum = str(newSum)
-            #Outpu    
+            #Output    
             self.parent().setText(3,newSum)
             self.setText(3,newNum)
+            
+    def updateOrderDetails(self):
+
+        CSRWidgets.teOrderDetails.clear()
+
+        itOrders = QTreeWidgetItemIterator(self.garmentTree)
+        while itOrders.value():
+            if itOrders.value() != None:
+                if itOrders.value().text(3) != "":
+                    if itOrders.value().parent().parent() != None:
+                        CSRWidgets.teOrderDetails.append(itOrders.value().parent().parent().text(0) + " " + itOrders.value().parent().text(0) 
+                                                         + " " + itOrders.value().text(0) + " " + itOrders.value().text(1) + " " +  
+                                                         itOrders.value().text(2) + " " + itOrders.value().text(3))
+                    print("hit")
+            itOrders += 1
+        
+        
+            
 

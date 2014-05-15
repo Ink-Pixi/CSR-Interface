@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
-                             QTreeWidgetItemIterator)
+                             QTreeWidgetItemIterator, QTextEdit)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
@@ -91,10 +91,12 @@ class MainWindow(QMainWindow):
         self.treeDock = QDockWidget("Order Items", self)
         self.garmentTree = QTreeWidget(self.treeDock)
         self.garmentTree.itemClicked.connect(CSRWidgets.sumQuantity)
+        self.garmentTree.itemClicked.connect(lambda: CSRWidgets.updateOrderDetails(self))
         self.garmentTree.setMaximumWidth(480)
         self.garmentTree.setMinimumWidth(480)
         #self.sku = QTreeWidgetItem(self.garmentTree)
         #self.garmName = QTreeWidgetItem()
+   
         self.treeDock.hide()
         
         
@@ -126,7 +128,7 @@ class MainWindow(QMainWindow):
     def itemClicked_Click(self):
         button = self.sender()
         txtItem = button.uniqueId
-        CSRWidgets.loadGarmentInfo(self,self.currentInfo[txtItem][2],self.currentInfo[txtItem][1],self.currentInfo[txtItem][0])
+        CSRWidgets.loadGarmentInfo(self, self.currentInfo[txtItem][2], self.currentInfo[txtItem][1], self.currentInfo[txtItem][0])
         #self.garmName.setExpanded(False)
 if __name__ == '__main__':
     import sys
