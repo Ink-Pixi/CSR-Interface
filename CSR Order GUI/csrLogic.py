@@ -446,7 +446,8 @@ class CSRWidgets(QWidget):
                     if itOrders.value().parent().parent() != None:
                         txtItems = []
                         txtItems = [itOrders.value().parent().parent().text(0), itOrders.value().parent().text(0), itOrders.value().text(0),
-                                    itOrders.value().text(1), itOrders.value().text(2), itOrders.value().text(3)]
+                                    itOrders.value().text(1), str(float(itOrders.value().text(2)) * float(itOrders.value().text(3))), 
+                                    itOrders.value().text(3)]
                         lstItems.append(txtItems)
             itOrders += 1
         print(lstItems)
