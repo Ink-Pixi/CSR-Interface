@@ -128,7 +128,7 @@ class CSRWidgets(QWidget):
         CSRWidgets.tblOrderDetails.setColumnWidth(1, 125)
         CSRWidgets.tblOrderDetails.setColumnWidth(2, 200)
         CSRWidgets.tblOrderDetails.setColumnWidth(3, 50)
-        CSRWidgets.tblOrderDetails.setColumnWidth(4, 50)
+        CSRWidgets.tblOrderDetails.setColumnWidth(4, 65)
         CSRWidgets.tblOrderDetails.setColumnWidth(5, 25)
         
         self.vBox.addWidget(hFrame)
@@ -183,7 +183,7 @@ class CSRWidgets(QWidget):
             sku.setBackground(2, QColor(180,180,180,127))
             sku.setBackground(3, QColor(180,180,180,127))
             sku.setBackground(4, QColor(180,180,180,127))
-            sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
+            sku.setFont(0, QFont("Helvetica",14,QFont.Bold))
             
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
@@ -446,7 +446,7 @@ class CSRWidgets(QWidget):
                     if itOrders.value().parent().parent() != None:
                         txtItems = []
                         txtItems = [itOrders.value().parent().parent().text(0), itOrders.value().parent().text(0), itOrders.value().text(0),
-                                    itOrders.value().text(1), str(float(itOrders.value().text(2)) * float(itOrders.value().text(3))), 
+                                    itOrders.value().text(1), str(format(float(itOrders.value().text(2)) * float(itOrders.value().text(3)), '.2f')), 
                                     itOrders.value().text(3)]
                         lstItems.append(txtItems)
             itOrders += 1
