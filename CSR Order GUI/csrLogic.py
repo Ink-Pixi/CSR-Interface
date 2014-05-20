@@ -99,11 +99,6 @@ class CSRWidgets(QWidget):
         hFrame.setLayout(hBox)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
         
-        
-        
-        
-     
-        
         icons = {}
         for i in des:
             icons[(i)] = QToolButton(self)
@@ -124,16 +119,23 @@ class CSRWidgets(QWidget):
         hBox.addStretch(1)
         hBox.setAlignment(self, Qt.AlignTop)
         
+        #Create table to hold and display details of order order as they are selected from the tree. 
         CSRWidgets.tblOrderDetails = QTableWidget()
         CSRWidgets.tblOrderDetails.setColumnCount(6)        
         lstHeader = ["Design", "Category", "Type", "Size", "Price", "Qty" ]     
         CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
+        CSRWidgets.tblOrderDetails.setColumnWidth(0, 50)
+        CSRWidgets.tblOrderDetails.setColumnWidth(1, 125)
+        CSRWidgets.tblOrderDetails.setColumnWidth(2, 200)
+        CSRWidgets.tblOrderDetails.setColumnWidth(3, 50)
+        CSRWidgets.tblOrderDetails.setColumnWidth(4, 50)
+        CSRWidgets.tblOrderDetails.setColumnWidth(5, 25)
         
         self.vBox.addWidget(hFrame)
         self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+        CSRWidgets.updateOrderDetails(self)
         #self.vBox.addStretch(1)
         
-        CSRWidgets.updateOrderDetails(self)       
         CSRWidgets.changeCentralWidget(self, self.vBox)
         
     def undo(self):
@@ -143,7 +145,7 @@ class CSRWidgets(QWidget):
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
         self.mainWidget.setLayout(widgetLayout)
-        self.mainWidget.setMinimumSize(1100, 800)
+        self.mainWidget.setMinimumSize(900, 800)
         if str(widgetLayout.objectName()) == "designPage":
             self.mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
         
@@ -162,15 +164,12 @@ class CSRWidgets(QWidget):
         
         #Set tree header/title stuff
         self.garmentTree.setHeaderLabels(columnList)
+        self.garmentTree.setColumnCount(5)
         self.garmentTree.header().resizeSection(0, 280)
         self.garmentTree.header().resizeSection(1, 75)
         self.garmentTree.header().resizeSection(2, 45)
         self.garmentTree.header().resizeSection(3, 30)
         self.garmentTree.header().resizeSection(4, 10)
-
-        self.garmentTree.setColumnCount(5)
-        
-        
         
         #If there are no nodes in this tree yet, create the first one
         if self.garmentTree.topLevelItemCount() == 0:
@@ -388,9 +387,6 @@ class CSRWidgets(QWidget):
         
         for item in self.garmentTree.selectedItems():
             (item.parent() or root).removeChild(item)        
-        
-#         for item in self.garmentTree.selectedItems():
-#             root.removeChild(item)
             
         CSRWidgets.updateOrderDetails(self)
         
@@ -438,7 +434,7 @@ class CSRWidgets(QWidget):
             #Output    
             self.parent().setText(3,newSum)
             self.setText(3,newNum)
-            
+                        
     def updateOrderDetails(self):
 
         lstItems = []
@@ -454,7 +450,6 @@ class CSRWidgets(QWidget):
                         lstItems.append(txtItems)
             itOrders += 1
         print(lstItems)
-
 
         CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))   
         print(len(lstItems))
