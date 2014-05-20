@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
-                             QTreeWidgetItemIterator, QTextEdit)
+                             QTreeWidgetItemIterator)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):

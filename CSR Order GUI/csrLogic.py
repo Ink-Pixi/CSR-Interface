@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QLineEdit, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTextEdit, QGroupBox)
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QBrush, QIntValidator, QColor
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem)
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
 from builtins import super
@@ -124,17 +124,16 @@ class CSRWidgets(QWidget):
         hBox.addStretch(1)
         hBox.setAlignment(self, Qt.AlignTop)
         
-        CSRWidgets.teOrderDetails = QTextEdit()
-        CSRWidgets.teOrderDetails.setReadOnly(True)
-        CSRWidgets.teOrderDetails.setText("Testing.")
-        CSRWidgets.teOrderDetails.setVisible(False)
+        CSRWidgets.tblOrderDetails = QTableWidget()
+        CSRWidgets.tblOrderDetails.setColumnCount(6)        
+        lstHeader = ["Design", "Category", "Type", "Size", "Price", "Qty" ]     
+        CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
         
         self.vBox.addWidget(hFrame)
-        self.vBox.addWidget(CSRWidgets.teOrderDetails)
-        self.vBox.addStretch(1)
+        self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+        #self.vBox.addStretch(1)
         
-
-        
+        CSRWidgets.updateOrderDetails(self)       
         CSRWidgets.changeCentralWidget(self, self.vBox)
         
     def undo(self):
@@ -198,6 +197,7 @@ class CSRWidgets(QWidget):
             garmName.setBackground(2, QColor(230,230,230,127))
             garmName.setBackground(3, QColor(230,230,230,127))
             garmName.setBackground(4, QColor(230,230,230,127))
+            
             removeSku = QToolButton(self)
             removeSku.setIcon(QIcon("icon/close-widget.png"))
             removeSku.setIconSize(QSize(14, 14))
@@ -373,8 +373,7 @@ class CSRWidgets(QWidget):
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
                     kiddo.setExpanded(True)
- 
-                  
+
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        
         self.vBox.addWidget(self.garmentTree)
@@ -382,15 +381,18 @@ class CSRWidgets(QWidget):
         self.treeDock.setWidget(self.garmentTree)
         self.addDockWidget(Qt.RightDockWidgetArea, self.treeDock)
         
-        CSRWidgets.teOrderDetails.setVisible(True)
-        CSRWidgets.teOrderDetails.append("Added Item.")
- 
     def remove_widget(self):
         btn = self.sender()
         btn.setFocus()
         root = self.garmentTree.invisibleRootItem()
+        
         for item in self.garmentTree.selectedItems():
-            root.removeChild(item)
+            (item.parent() or root).removeChild(item)        
+        
+#         for item in self.garmentTree.selectedItems():
+#             root.removeChild(item)
+            
+        CSRWidgets.updateOrderDetails(self)
         
     #This function is needed for creating multiple lambda connections in a loop
     #NOT USING THIS FUNCTION STARTING WITH BRANCH 4.
@@ -439,19 +441,29 @@ class CSRWidgets(QWidget):
             
     def updateOrderDetails(self):
 
-        CSRWidgets.teOrderDetails.clear()
+        lstItems = []
 
         itOrders = QTreeWidgetItemIterator(self.garmentTree)
         while itOrders.value():
             if itOrders.value() != None:
-                if itOrders.value().text(3) != "":
+                if itOrders.value().text(3) != "" and itOrders.value().text(2) != "":
                     if itOrders.value().parent().parent() != None:
-                        CSRWidgets.teOrderDetails.append(itOrders.value().parent().parent().text(0) + " " + itOrders.value().parent().text(0) 
-                                                         + " " + itOrders.value().text(0) + " " + itOrders.value().text(1) + " " +  
-                                                         itOrders.value().text(2) + " " + itOrders.value().text(3))
-                    print("hit")
+                        txtItems = []
+                        txtItems = [itOrders.value().parent().parent().text(0), itOrders.value().parent().text(0), itOrders.value().text(0),
+                                    itOrders.value().text(1), itOrders.value().text(2), itOrders.value().text(3)]
+                        lstItems.append(txtItems)
             itOrders += 1
+        print(lstItems)
+
+
+        CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))   
+        print(len(lstItems))
         
+        for i, row in enumerate(lstItems):
+            for j, col in enumerate(row):
+                item = QTableWidgetItem(col)
+                item.setFlags(Qt.ItemIsEditable)
+                CSRWidgets.tblOrderDetails.setItem(i, j, item)         
+        self.vBox.addWidget(CSRWidgets.tblOrderDetails)
         
-            
 
