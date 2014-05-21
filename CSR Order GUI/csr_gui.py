@@ -1,13 +1,14 @@
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
-                             QTreeWidgetItemIterator)
+                             QTreeWidgetItemIterator, QPushButton, QLabel)
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        
+        print('I was here')
+        self.custName = ""
         self.setUpMenus()
        
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self, 'default')) #Sets central widget on init.
@@ -50,7 +51,7 @@ class MainWindow(QMainWindow):
         self.homeToolBar.addAction(self.quitAct)
 
         self.searchToolBar = self.addToolBar("Search")
-        #self.searchToolBar.addAction(self.searchAct)
+        self.searchToolBar.addAction(self.searchAct)
         
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(150)
@@ -58,7 +59,17 @@ class MainWindow(QMainWindow):
         
         self.searchToolBar.addSeparator()
         self.searchToolBar.addAction(self.undoAct)
-        #self.searchToolBar.addAction(self.enterAct)
+        
+        self.searchToolBar.addSeparator()
+        
+        btnNameChange = QPushButton('Change Name', self)
+        btnNameChange.clicked.connect(lambda: CSRWidgets.setCustomerName(self))
+        
+        self.lblCustName = QLabel()
+        
+        self.searchToolBar.addWidget(btnNameChange)
+        self.searchToolBar.addWidget(self.lblCustName)
+        
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")

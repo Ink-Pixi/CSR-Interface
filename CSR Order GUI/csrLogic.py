@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
                              QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem,
-                             QSizePolicy)
+                             QSizePolicy, QInputDialog)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -56,13 +56,13 @@ class CSRWidgets(QWidget):
                                triggered=self.close)
 
         self.aboutAct = QAction("&About", self, statusTip="Show the application's About box", triggered=self.about)  
-        #self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Return, statusTip="Find a design.",
-        #                         triggered=self.btnSearch_Click)
+        self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Enter, statusTip="Find a design.",
+                                 triggered=self.btnSearch_Click)
         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
                                triggered=self.btnHome_Click)
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
                                statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
-        #self.enterAct = QAction(self, shortcut=Qt.Key_Enter, triggered=self.btnSearch_Click)
+        
         
     def loadDesignItem(self, sku_code):
         self.availableItems.clear()
@@ -144,6 +144,10 @@ class CSRWidgets(QWidget):
         
         CSRWidgets.changeCentralWidget(self, self.vBox)
         
+        print(self.custName)
+        if self.custName == "":
+            CSRWidgets.setCustomerName(self)
+        
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()
@@ -161,8 +165,9 @@ class CSRWidgets(QWidget):
         self.scrollWidget.setAlignment(Qt.AlignTop)
         
         self.setCentralWidget(self.scrollWidget)
-
+        
     def loadGarmentInfo(self,sku_code,garment_type,garment_name,design_name):
+         
         print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
@@ -182,7 +187,7 @@ class CSRWidgets(QWidget):
             #print("NEW PARENT NODE")
             CSRWidgets.lblTotal = {}
             nm = QTreeWidgetItem(self.garmentTree)
-            nm.setText(0, design_name)
+            nm.setText(0, self.custName)
             nm.setBackground(0, QColor(180,180,180,127))
             nm.setBackground(1, QColor(180,180,180,127))
             nm.setBackground(2, QColor(180,180,180,127))
@@ -240,7 +245,8 @@ class CSRWidgets(QWidget):
                 kiddo.setText(3,"")
                 kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
                 kiddo.setText(4,"      -")
-
+                
+                nm.setExpanded(True)
                 sku.setExpanded(True)
                 garmName.setExpanded(True)
                 kiddo.setExpanded(True)
@@ -341,7 +347,7 @@ class CSRWidgets(QWidget):
             else:
                 
                 nm = QTreeWidgetItem(self.garmentTree)
-                nm.setText(0, design_name)
+                nm.setText(0, self.custName)
                 nm.setBackground(0, QColor(180,180,180,127))
                 nm.setBackground(1, QColor(180,180,180,127))
                 nm.setBackground(2, QColor(180,180,180,127))
@@ -394,8 +400,8 @@ class CSRWidgets(QWidget):
                     kiddo.setText(2, str(i[3]))
                     kiddo.setText(1, i[2])
                     kiddo.setText(3,"")
-                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
-                    kiddo.setText(4,"      -")
+                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold))
+                    nm.setExpanded(True)
                     sku.setExpanded(True)
                     garmName.setExpanded(True)
                     kiddo.setExpanded(True)
@@ -491,4 +497,10 @@ class CSRWidgets(QWidget):
                 CSRWidgets.tblOrderDetails.setItem(i, j, item)         
         self.vBox.addWidget(CSRWidgets.tblOrderDetails)
         
-
+    def setCustomerName(self):
+        print('no name')
+        inCustName, ok = QInputDialog.getText(self, "Enter Name", "Please Enter Name:")
+        if ok:
+            print(inCustName)
+            self.custName = inCustName
+            self.lblCustName.setText(inCustName)
