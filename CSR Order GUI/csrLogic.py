@@ -82,7 +82,7 @@ class CSRWidgets(QWidget):
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[7]))         
-            self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]))
+            self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]),str(i[1]))
             self.availableItems.addItem(CSRWidgets.item)
                 
         smImage = self.currentInfo['T-Shirts'][3]
@@ -156,8 +156,8 @@ class CSRWidgets(QWidget):
         
         self.setCentralWidget(self.scrollWidget)
 
-    def loadGarmentInfo(self,sku_code,garment_type,garment_name):
-        #print(garment_type)
+    def loadGarmentInfo(self,sku_code,garment_type,garment_name,design_name):
+        print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
         columnList = ["Design", "Size","Price", "Qty",""]
@@ -175,15 +175,23 @@ class CSRWidgets(QWidget):
         if self.garmentTree.topLevelItemCount() == 0:
             #print("NEW PARENT NODE")
             CSRWidgets.lblTotal = {}
+            nm = QTreeWidgetItem(self.garmentTree)
+            nm.setText(0, design_name)
+            nm.setBackground(0, QColor(180,180,180,127))
+            nm.setBackground(1, QColor(180,180,180,127))
+            nm.setBackground(2, QColor(180,180,180,127))
+            nm.setBackground(3, QColor(180,180,180,127))
+            nm.setBackground(4, QColor(180,180,180,127))
+            nm.setFont(0, QFont("Helvetica",16,QFont.Bold))
             
-            sku = QTreeWidgetItem(self.garmentTree)
+            sku = QTreeWidgetItem(nm)
             sku.setText(0, sku_code)
             sku.setBackground(0, QColor(180,180,180,127))
             sku.setBackground(1, QColor(180,180,180,127))
             sku.setBackground(2, QColor(180,180,180,127))
             sku.setBackground(3, QColor(180,180,180,127))
             sku.setBackground(4, QColor(180,180,180,127))
-            sku.setFont(0, QFont("Helvetica",14,QFont.Bold))
+            sku.setFont(0, QFont("Helvetica",12,QFont.Bold))
             
             #If the garment name does not exist we want to create a node for it. 
             garmName = QTreeWidgetItem(sku)
@@ -236,11 +244,14 @@ class CSRWidgets(QWidget):
                 
         #If items already exist in the tree, do stuff depending on what sku/garment was clicked.
         else:
+            name_match = 0
             sku_match = 0       
             itSku = QTreeWidgetItemIterator(self.garmentTree) 
 
             #iterate through all tree items and see if anything matches the SKU we selected.           
             while itSku.value():
+                if itSku.value().text(0) == design_name:
+                    name_match = 1
                 #If the SKU we selected exists somewhere in the tree, set variable to indicate that.
                 if itSku.value().text(0) == sku_code:
                     sku_match = 1
@@ -276,7 +287,7 @@ class CSRWidgets(QWidget):
                     itSizes = QTreeWidgetItemIterator(self.garmentTree)
                     while itSizes.value():
                         #When the iterator hits the correct SKU, create the new garment node that doesn't exist yet.                         
-                        if itSizes.value().text(0) == sku_code:
+                        if itSizes.value().text(0) == design_name:
                             #If the garment name does not exist we want to create a node for it. 
                             garmName = QTreeWidgetItem(itSizes.value())
                             garmName.setText(0, garment_name)
@@ -322,14 +333,24 @@ class CSRWidgets(QWidget):
                 
             #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
             else:
-                sku = QTreeWidgetItem(self.garmentTree)
+                
+                nm = QTreeWidgetItem(self.garmentTree)
+                nm.setText(0, design_name)
+                nm.setBackground(0, QColor(180,180,180,127))
+                nm.setBackground(1, QColor(180,180,180,127))
+                nm.setBackground(2, QColor(180,180,180,127))
+                nm.setBackground(3, QColor(180,180,180,127))
+                nm.setBackground(4, QColor(180,180,180,127))
+                nm.setFont(0, QFont("Helvetica",16,QFont.Bold))
+                 
+                sku = QTreeWidgetItem(nm)     
                 sku.setText(0, sku_code)
                 sku.setBackground(0, QColor(180,180,180,127))
                 sku.setBackground(1, QColor(180,180,180,127))
                 sku.setBackground(2, QColor(180,180,180,127))
                 sku.setBackground(3, QColor(180,180,180,127))
                 sku.setBackground(4, QColor(180,180,180,127))
-                sku.setFont(0, QFont("Helvetica",14,QFont.Bold) )
+                sku.setFont(0, QFont("Helvetica",12,QFont.Bold) )
                 #If the garment name does not exist we want to create a node for it. 
                 garmName = QTreeWidgetItem(sku)
                 garmName.setText(0, garment_name)
@@ -398,7 +419,7 @@ class CSRWidgets(QWidget):
       
     def sumQuantity(self, column):
 
-        if self.text(column):
+        if self.text(column) and self.childCount() == 0 and self.parent() != None:
             #If this row has no Quantity yet, set it to zero.
             if self.text(3) == "":
                 newNum = 0
@@ -434,7 +455,9 @@ class CSRWidgets(QWidget):
             #Output    
             self.parent().setText(3,newSum)
             self.setText(3,newNum)
-                        
+
+
+                      
     def updateOrderDetails(self):
 
         lstItems = []

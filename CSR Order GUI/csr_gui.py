@@ -89,9 +89,10 @@ class MainWindow(QMainWindow):
         
         #Create a tree widget for use when the t-shirt is clicked.
         self.treeDock = QDockWidget("Order Items", self)
-        self.garmentTree = QTreeWidget(self.treeDock)
+        self.garmentTree = QTreeWidget(self.treeDock)        
         self.garmentTree.itemClicked.connect(CSRWidgets.sumQuantity)
         self.garmentTree.itemClicked.connect(lambda: CSRWidgets.updateOrderDetails(self))
+            
         self.garmentTree.setMaximumWidth(480)
         self.garmentTree.setMinimumWidth(480)
         #self.sku = QTreeWidgetItem(self.garmentTree)
@@ -128,7 +129,7 @@ class MainWindow(QMainWindow):
     def itemClicked_Click(self):
         button = self.sender()
         txtItem = button.uniqueId
-        CSRWidgets.loadGarmentInfo(self, self.currentInfo[txtItem][2], self.currentInfo[txtItem][1], self.currentInfo[txtItem][0])
+        CSRWidgets.loadGarmentInfo(self, self.currentInfo[txtItem][2], self.currentInfo[txtItem][1], self.currentInfo[txtItem][0], self.currentInfo[txtItem][6])
         #self.garmName.setExpanded(False)
 if __name__ == '__main__':
     import sys
