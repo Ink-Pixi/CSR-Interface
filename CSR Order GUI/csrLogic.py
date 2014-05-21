@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem)
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem,
+                             QSizePolicy)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -113,7 +114,6 @@ class CSRWidgets(QWidget):
             icons[(i)].uniqueId = str(i[7])
             icons[(i)].clicked.connect(self.itemClicked_Click)
             hBox.addWidget(icons[(i)])
-            #print("//wampserver/" + str(i[10]))
         
         
         hBox.addStretch(1)
@@ -122,14 +122,20 @@ class CSRWidgets(QWidget):
         #Create table to hold and display details of order order as they are selected from the tree. 
         CSRWidgets.tblOrderDetails = QTableWidget()
         CSRWidgets.tblOrderDetails.setColumnCount(6)        
+        CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
         lstHeader = ["Design", "Category", "Type", "Size", "Price", "Qty" ]     
         CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
+        CSRWidgets.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         CSRWidgets.tblOrderDetails.setColumnWidth(0, 50)
         CSRWidgets.tblOrderDetails.setColumnWidth(1, 125)
         CSRWidgets.tblOrderDetails.setColumnWidth(2, 200)
         CSRWidgets.tblOrderDetails.setColumnWidth(3, 50)
         CSRWidgets.tblOrderDetails.setColumnWidth(4, 65)
         CSRWidgets.tblOrderDetails.setColumnWidth(5, 25)
+        CSRWidgets.tblOrderDetails.setMaximumWidth(535)
+        CSRWidgets.tblOrderDetails.setMinimumWidth(535)
+        CSRWidgets.tblOrderDetails.setMaximumHeight(650)
+        CSRWidgets.tblOrderDetails.setMinimumHeight(650)
         
         self.vBox.addWidget(hFrame)
         self.vBox.addWidget(CSRWidgets.tblOrderDetails)
@@ -145,7 +151,7 @@ class CSRWidgets(QWidget):
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
         self.mainWidget.setLayout(widgetLayout)
-        self.mainWidget.setMinimumSize(900, 800)
+        #self.mainWidget.setMinimumSize(900, 800)
         if str(widgetLayout.objectName()) == "designPage":
             self.mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
         
