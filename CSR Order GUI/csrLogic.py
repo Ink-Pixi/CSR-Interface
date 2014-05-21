@@ -262,150 +262,296 @@ class CSRWidgets(QWidget):
 
             #iterate through all tree items and see if anything matches the SKU we selected.           
             while itSku.value():
-                if itSku.value().text(0) == design_name:
+                if itSku.value().text(0) == self.custName:
                     name_match = 1
+                    #print("NAME MATCHED!!!")
                 #If the SKU we selected exists somewhere in the tree, set variable to indicate that.
                 if itSku.value().text(0) == sku_code:
                     sku_match = 1
+                    #print("SKU MATCHED!!!")
                 #Collapse all non-parent nodes so we can selectively open the nodes we are currently working on below.
                 if itSku.value().parent() != None:   
                     itSku.value().setExpanded(False)
                 itSku += 1
 
-
-            #if the SKU we've selected already exists in the tree, check to see if the garment we've selected exists also   
-            if sku_match == 1:
-                garm_match = 0
-                #print("already", sku_code)
-                #Create an iterator to iterate through all the elements in the tree.
-                itGarment = QTreeWidgetItemIterator(self.garmentTree)
-                #Open up iterator
-                while itGarment.value():
-                    #If BOTH the SKU and garment already exist in the tree, just expand it while collapsing all other items.
-                    if itGarment.value().text(0) == garment_name and itGarment.value().parent().text(0) == sku_code:
-                        #itGarment.value().parent().setExpanded(True)
-                        #itGarment.value().setExpanded(True)
-                        garm_match = 1
-                        
-                        itGarment.value().parent().setExpanded(True)
-                        itGarment.value().setExpanded(True)
-                        
-                    itGarment += 1
-
-
-                #If the selected garment does NOT exist in the tree for this SKU, create it.
-                if garm_match == 0:
-                    #create tree iterator
-                    itSizes = QTreeWidgetItemIterator(self.garmentTree)
-                    while itSizes.value():
-                        #When the iterator hits the correct SKU, create the new garment node that doesn't exist yet.                         
-                        if itSizes.value().text(0) == design_name:
-                            #If the garment name does not exist we want to create a node for it. 
-                            garmName = QTreeWidgetItem(itSizes.value())
-                            garmName.setText(0, garment_name)
-                            garmName.setText(3, "")
-                            garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
-                            garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+            if name_match == 1:
+                print("NAME MATCHED!!!!!!!!")
+                #if the SKU we've selected already exists in the tree, check to see if the garment we've selected exists also   
+                if sku_match == 1:
+                    print("SKU MATCHED!!!")
+                    garm_match = 0
+                    #print("already", sku_code)
+                    #Create an iterator to iterate through all the elements in the tree.
+                    itGarment = QTreeWidgetItemIterator(self.garmentTree)
+                    #Open up iterator
+                    while itGarment.value():
+                        #If BOTH the SKU and garment already exist in the tree, just expand it while collapsing all other items.
+                        if itGarment.value().text(0) == garment_name and itGarment.value().parent().text(0) == sku_code and itGarment.value().parent().parent().text(0) == self.custName:
+                            #itGarment.value().parent().setExpanded(True)
+                            #itGarment.value().setExpanded(True)
+                            garm_match = 1
+                            itGarment.value().parent().parent().setExpanded(True)
+                            itGarment.value().parent().setExpanded(True)
+                            itGarment.value().setExpanded(True)
                             
-                            
-                            garmName.setBackground(0, QColor(230,230,230,127))
-                            garmName.setBackground(1, QColor(230,230,230,127))
-                            garmName.setBackground(2, QColor(230,230,230,127))
-                            garmName.setBackground(3, QColor(230,230,230,127))
-                            garmName.setBackground(4, QColor(230,230,230,127))
-                            
-                            removeGarment = QToolButton(self)
-                            removeGarment.setIcon(QIcon("icon/close-widget.png"))
-                            removeGarment.setIconSize(QSize(14, 14))
-                            removeGarment.setAutoRaise(True)
-                            removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
-                            CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
-                            CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
-                            CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
-                            
-                            self.garmentTree.setItemWidget(garmName, 4, removeGarment)
-                            self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
-                            #Create all the garment types for the node
-                            #CSRWidgets.le = {}
-                            for i in garm:
-                                kiddo = QTreeWidgetItem(garmName)
-                                kiddo.setText(0, i[1])
-                                kiddo.setText(2, str(i[3]))
-                                kiddo.setText(1, i[2])
-                                kiddo.setText(3,"")
-                                kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
-                                kiddo.setText(4,"      -")
-                                itSizes.value().setExpanded(True)
-                                garmName.setExpanded(True)
-                                kiddo.setExpanded(True)
-                        itSizes += 1       
- 
- 
-                                       
-                
-            #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
+                        itGarment += 1
+    
+    
+                    #If the selected garment does NOT exist in the tree for this SKU, create it.
+                    if garm_match == 0:
+                        #create tree iterator
+                        itSizes = QTreeWidgetItemIterator(self.garmentTree)
+                        while itSizes.value():
+                            #When the iterator hits the correct SKU, create the new garment node that doesn't exist yet.                         
+                            if itSizes.value().text(0) == self.custName:
+                                #If the garment name does not exist we want to create a node for it. 
+                                garmName = QTreeWidgetItem(itSizes.value())
+                                garmName.setText(0, garment_name)
+                                garmName.setText(3, "")
+                                garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                                garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+                                
+                                
+                                garmName.setBackground(0, QColor(230,230,230,127))
+                                garmName.setBackground(1, QColor(230,230,230,127))
+                                garmName.setBackground(2, QColor(230,230,230,127))
+                                garmName.setBackground(3, QColor(230,230,230,127))
+                                garmName.setBackground(4, QColor(230,230,230,127))
+                                
+                                removeGarment = QToolButton(self)
+                                removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                                removeGarment.setIconSize(QSize(14, 14))
+                                removeGarment.setAutoRaise(True)
+                                removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
+                                
+                                self.garmentTree.setItemWidget(garmName, 4, removeGarment)
+                                self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                                #Create all the garment types for the node
+                                #CSRWidgets.le = {}
+                                for i in garm:
+                                    kiddo = QTreeWidgetItem(garmName)
+                                    kiddo.setText(0, i[1])
+                                    kiddo.setText(2, str(i[3]))
+                                    kiddo.setText(1, i[2])
+                                    kiddo.setText(3,"")
+                                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
+                                    kiddo.setText(4,"      -")
+                                    itSizes.value().setExpanded(True)
+                                    garmName.setExpanded(True)
+                                    kiddo.setExpanded(True)
+                            itSizes += 1       
+     
+     
+                                           
+                    
+                #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
+                else:
+                    
+                    nm = QTreeWidgetItem(self.garmentTree)
+                    nm.setText(0, self.custName)
+                    nm.setBackground(0, QColor(180,180,180,127))
+                    nm.setBackground(1, QColor(180,180,180,127))
+                    nm.setBackground(2, QColor(180,180,180,127))
+                    nm.setBackground(3, QColor(180,180,180,127))
+                    nm.setBackground(4, QColor(180,180,180,127))
+                    nm.setFont(0, QFont("Helvetica",16,QFont.Bold))
+                     
+                    sku = QTreeWidgetItem(nm)     
+                    sku.setText(0, sku_code)
+                    sku.setBackground(0, QColor(180,180,180,127))
+                    sku.setBackground(1, QColor(180,180,180,127))
+                    sku.setBackground(2, QColor(180,180,180,127))
+                    sku.setBackground(3, QColor(180,180,180,127))
+                    sku.setBackground(4, QColor(180,180,180,127))
+                    sku.setFont(0, QFont("Helvetica",12,QFont.Bold) )
+                    #If the garment name does not exist we want to create a node for it. 
+                    garmName = QTreeWidgetItem(sku)
+                    garmName.setText(0, garment_name)
+                    garmName.setText(3, "")
+                    garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                    garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+                    garmName.setBackground(0, QColor(230,230,230,127))
+                    garmName.setBackground(1, QColor(230,230,230,127))
+                    garmName.setBackground(2, QColor(230,230,230,127))
+                    garmName.setBackground(3, QColor(230,230,230,127))
+                    garmName.setBackground(4, QColor(230,230,230,127))
+                    removeSku = QToolButton(self)
+                    removeSku.setIcon(QIcon("icon/close-widget.png"))
+                    removeSku.setIconSize(QSize(14, 14))
+                    removeSku.setAutoRaise(True)
+                    removeSku.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                    
+                    removeGarment = QToolButton(self)
+                    removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                    removeGarment.setIconSize(QSize(14, 14))
+                    removeGarment.setAutoRaise(True)
+                    removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
+                    
+                    self.garmentTree.setItemWidget(sku, 4, removeSku)
+                    self.garmentTree.setItemWidget(garmName, 4, removeGarment)  
+                    self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                    #CSRWidgets.le = {}
+                    #Create all the garment types for the first node
+                    for i in garm:
+                        kiddo = QTreeWidgetItem(garmName)
+                        kiddo.setText(0, i[1])
+                        kiddo.setText(2, str(i[3]))
+                        kiddo.setText(1, i[2])
+                        kiddo.setText(3,"")
+                        kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold))
+                        nm.setExpanded(True)
+                        sku.setExpanded(True)
+                        garmName.setExpanded(True)
+                        kiddo.setExpanded(True)
             else:
+                print("NAME DIDN'T MATCH")
+                if sku_match == 1:
+                    print("SKU MATCHED!!!")
+                    garm_match = 0
+                    #print("already", sku_code)
+                    #Create an iterator to iterate through all the elements in the tree.
+                    itGarment = QTreeWidgetItemIterator(self.garmentTree)
+                    #Open up iterator
+                    while itGarment.value():
+                        #If BOTH the SKU and garment already exist in the tree, just expand it while collapsing all other items.
+                        if itGarment.value().text(0) == garment_name and itGarment.value().parent().text(0) == sku_code and itGarment.value().parent().parent().text(0) == self.custName:
+                            #itGarment.value().parent().setExpanded(True)
+                            #itGarment.value().setExpanded(True)
+                            garm_match = 1
+                            itGarment.value().parent().parent().setExpanded(True)
+                            itGarment.value().parent().setExpanded(True)
+                            itGarment.value().setExpanded(True)
+                            
+                        itGarment += 1
+    
+    
+                    #If the selected garment does NOT exist in the tree for this SKU, create it.
+                    if garm_match == 0:
+                        #create tree iterator
+                        itSizes = QTreeWidgetItemIterator(self.garmentTree)
+                        while itSizes.value():
+                            #When the iterator hits the correct SKU, create the new garment node that doesn't exist yet.                         
+                            if itSizes.value().text(0) == design_name:
+                                #If the garment name does not exist we want to create a node for it. 
+                                garmName = QTreeWidgetItem(itSizes.value())
+                                garmName.setText(0, garment_name)
+                                garmName.setText(3, "")
+                                garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                                garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+                                
+                                
+                                garmName.setBackground(0, QColor(230,230,230,127))
+                                garmName.setBackground(1, QColor(230,230,230,127))
+                                garmName.setBackground(2, QColor(230,230,230,127))
+                                garmName.setBackground(3, QColor(230,230,230,127))
+                                garmName.setBackground(4, QColor(230,230,230,127))
+                                
+                                removeGarment = QToolButton(self)
+                                removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                                removeGarment.setIconSize(QSize(14, 14))
+                                removeGarment.setAutoRaise(True)
+                                removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                                CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
+                                
+                                self.garmentTree.setItemWidget(garmName, 4, removeGarment)
+                                self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                                #Create all the garment types for the node
+                                #CSRWidgets.le = {}
+                                for i in garm:
+                                    kiddo = QTreeWidgetItem(garmName)
+                                    kiddo.setText(0, i[1])
+                                    kiddo.setText(2, str(i[3]))
+                                    kiddo.setText(1, i[2])
+                                    kiddo.setText(3,"")
+                                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
+                                    kiddo.setText(4,"      -")
+                                    itSizes.value().setExpanded(True)
+                                    garmName.setExpanded(True)
+                                    kiddo.setExpanded(True)
+                            itSizes += 1       
+     
+     
+                                           
+                    
+                #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
+                else:
+                    
+                    nm = QTreeWidgetItem(self.garmentTree)
+                    nm.setText(0, self.custName)
+                    nm.setBackground(0, QColor(180,180,180,127))
+                    nm.setBackground(1, QColor(180,180,180,127))
+                    nm.setBackground(2, QColor(180,180,180,127))
+                    nm.setBackground(3, QColor(180,180,180,127))
+                    nm.setBackground(4, QColor(180,180,180,127))
+                    nm.setFont(0, QFont("Helvetica",16,QFont.Bold))
+                     
+                    sku = QTreeWidgetItem(nm)     
+                    sku.setText(0, sku_code)
+                    sku.setBackground(0, QColor(180,180,180,127))
+                    sku.setBackground(1, QColor(180,180,180,127))
+                    sku.setBackground(2, QColor(180,180,180,127))
+                    sku.setBackground(3, QColor(180,180,180,127))
+                    sku.setBackground(4, QColor(180,180,180,127))
+                    sku.setFont(0, QFont("Helvetica",12,QFont.Bold) )
+                    #If the garment name does not exist we want to create a node for it. 
+                    garmName = QTreeWidgetItem(sku)
+                    garmName.setText(0, garment_name)
+                    garmName.setText(3, "")
+                    garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
+                    garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
+                    garmName.setBackground(0, QColor(230,230,230,127))
+                    garmName.setBackground(1, QColor(230,230,230,127))
+                    garmName.setBackground(2, QColor(230,230,230,127))
+                    garmName.setBackground(3, QColor(230,230,230,127))
+                    garmName.setBackground(4, QColor(230,230,230,127))
+                    removeSku = QToolButton(self)
+                    removeSku.setIcon(QIcon("icon/close-widget.png"))
+                    removeSku.setIconSize(QSize(14, 14))
+                    removeSku.setAutoRaise(True)
+                    removeSku.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                    
+                    removeGarment = QToolButton(self)
+                    removeGarment.setIcon(QIcon("icon/close-widget.png"))
+                    removeGarment.setIconSize(QSize(14, 14))
+                    removeGarment.setAutoRaise(True)
+                    removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
+                    CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
+                    
+                    self.garmentTree.setItemWidget(sku, 4, removeSku)
+                    self.garmentTree.setItemWidget(garmName, 4, removeGarment)  
+                    self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
+                    #CSRWidgets.le = {}
+                    #Create all the garment types for the first node
+                    for i in garm:
+                        kiddo = QTreeWidgetItem(garmName)
+                        kiddo.setText(0, i[1])
+                        kiddo.setText(2, str(i[3]))
+                        kiddo.setText(1, i[2])
+                        kiddo.setText(3,"")
+                        kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold))
+                        nm.setExpanded(True)
+                        sku.setExpanded(True)
+                        garmName.setExpanded(True)
+                        kiddo.setExpanded(True)
                 
-                nm = QTreeWidgetItem(self.garmentTree)
-                nm.setText(0, self.custName)
-                nm.setBackground(0, QColor(180,180,180,127))
-                nm.setBackground(1, QColor(180,180,180,127))
-                nm.setBackground(2, QColor(180,180,180,127))
-                nm.setBackground(3, QColor(180,180,180,127))
-                nm.setBackground(4, QColor(180,180,180,127))
-                nm.setFont(0, QFont("Helvetica",16,QFont.Bold))
-                 
-                sku = QTreeWidgetItem(nm)     
-                sku.setText(0, sku_code)
-                sku.setBackground(0, QColor(180,180,180,127))
-                sku.setBackground(1, QColor(180,180,180,127))
-                sku.setBackground(2, QColor(180,180,180,127))
-                sku.setBackground(3, QColor(180,180,180,127))
-                sku.setBackground(4, QColor(180,180,180,127))
-                sku.setFont(0, QFont("Helvetica",12,QFont.Bold) )
-                #If the garment name does not exist we want to create a node for it. 
-                garmName = QTreeWidgetItem(sku)
-                garmName.setText(0, garment_name)
-                garmName.setText(3, "")
-                garmName.setFont(0,QFont("Helvetica",10,QFont.Bold))
-                garmName.setFont(3,QFont("Helvetica",10,QFont.Bold))
-                garmName.setBackground(0, QColor(230,230,230,127))
-                garmName.setBackground(1, QColor(230,230,230,127))
-                garmName.setBackground(2, QColor(230,230,230,127))
-                garmName.setBackground(3, QColor(230,230,230,127))
-                garmName.setBackground(4, QColor(230,230,230,127))
-                removeSku = QToolButton(self)
-                removeSku.setIcon(QIcon("icon/close-widget.png"))
-                removeSku.setIconSize(QSize(14, 14))
-                removeSku.setAutoRaise(True)
-                removeSku.clicked.connect(lambda: CSRWidgets.remove_widget(self))
                 
-                removeGarment = QToolButton(self)
-                removeGarment.setIcon(QIcon("icon/close-widget.png"))
-                removeGarment.setIconSize(QSize(14, 14))
-                removeGarment.setAutoRaise(True)
-                removeGarment.clicked.connect(lambda: CSRWidgets.remove_widget(self))
-                CSRWidgets.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
-                CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
-                CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
                 
-                self.garmentTree.setItemWidget(sku, 4, removeSku)
-                self.garmentTree.setItemWidget(garmName, 4, removeGarment)  
-                self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
-                #CSRWidgets.le = {}
-                #Create all the garment types for the first node
-                for i in garm:
-                    kiddo = QTreeWidgetItem(garmName)
-                    kiddo.setText(0, i[1])
-                    kiddo.setText(2, str(i[3]))
-                    kiddo.setText(1, i[2])
-                    kiddo.setText(3,"")
-                    kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold))
-                    nm.setExpanded(True)
-                    sku.setExpanded(True)
-                    garmName.setExpanded(True)
-                    kiddo.setExpanded(True)
-
+                
+                
+                
+                
+                
+                
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        
         self.vBox.addWidget(self.garmentTree)
