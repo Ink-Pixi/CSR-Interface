@@ -19,7 +19,6 @@ class CSRWidgets(QWidget):
         else:
             qryResult = mysql_db.searchDesigns(self,qryId)
             
-
         k = 0
         j = 0
         for i in range(len(qryResult)):
@@ -62,11 +61,9 @@ class CSRWidgets(QWidget):
                                triggered=self.btnHome_Click)
         self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
                                statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
-        
-        
+      
     def loadDesignItem(self, sku_code):
-        self.availableItems.clear()
-        #self.orderItem.clear()
+
         des = mysql_db.designInfo(self, sku_code)
         
         self.vBox = QVBoxLayout()
@@ -75,20 +72,18 @@ class CSRWidgets(QWidget):
             lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that " + \
                              "they searched an empty string or that the design they were looking for does not exist or that " + \
                              "they mistyped what they were looking for.", self)
-            self.vBox.addWidget(lblOpps)
+            self.grid.addWidget(lblOpps)
             CSRWidgets.changeCentralWidget(self, self.vBox)
-        #print(des)        
+        print(des)        
 
         self.currentInfo = {}
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[7]))         
             self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]),str(i[1]))
-            self.availableItems.addItem(CSRWidgets.item)
-                
         smImage = self.currentInfo['T-Shirts'][3]
+
         hBox = QHBoxLayout()
-        
         
         pix = QLabel()
         smImg = QPixmap("//wampserver/"+ smImage)
@@ -96,10 +91,7 @@ class CSRWidgets(QWidget):
         pix.setPixmap(myScaledPixmap)
 
         hBox.addWidget(pix)
-        hFrame = QFrame()
-        hFrame.setLayout(hBox)
-        hFrame.setStyleSheet("background-color: rgb(255, 255, 255);")
-        
+       
         icons = {}
         for i in des:
             icons[(i)] = QToolButton(self)
@@ -115,39 +107,29 @@ class CSRWidgets(QWidget):
             icons[(i)].clicked.connect(self.itemClicked_Click)
             hBox.addWidget(icons[(i)])
         
-        
         hBox.addStretch(1)
-        hBox.setAlignment(self, Qt.AlignTop)
+        
+        hFrame = QFrame()
+        hFrame.setLayout(hBox)
+        hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
         
         #Create table to hold and display details of order order as they are selected from the tree. 
-        CSRWidgets.tblOrderDetails = QTableWidget()
-        CSRWidgets.tblOrderDetails.setColumnCount(6)        
-        CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
-        lstHeader = ["Design", "Category", "Type", "Size", "Price", "Qty" ]     
-        CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
-        CSRWidgets.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        CSRWidgets.tblOrderDetails.setColumnWidth(0, 50)
-        CSRWidgets.tblOrderDetails.setColumnWidth(1, 125)
-        CSRWidgets.tblOrderDetails.setColumnWidth(2, 200)
-        CSRWidgets.tblOrderDetails.setColumnWidth(3, 50)
-        CSRWidgets.tblOrderDetails.setColumnWidth(4, 65)
-        CSRWidgets.tblOrderDetails.setColumnWidth(5, 25)
-        CSRWidgets.tblOrderDetails.setMaximumWidth(535)
-        CSRWidgets.tblOrderDetails.setMinimumWidth(535)
-        CSRWidgets.tblOrderDetails.setMaximumHeight(650)
-        CSRWidgets.tblOrderDetails.setMinimumHeight(650)
+        CSRWidgets.tblOrderDetails = QTableWidget(7, 0)
+        CSRWidgets.tblOrderDetails.hide()
         
-        self.vBox.addWidget(hFrame)
         self.vBox.addWidget(CSRWidgets.tblOrderDetails)
-        CSRWidgets.updateOrderDetails(self)
-        #self.vBox.addStretch(1)
-        
+        self.vBox.addWidget(hFrame)
+       
+        self.vBox.addStretch(1)
+
         CSRWidgets.changeCentralWidget(self, self.vBox)
         
-        print(self.custName)
         if self.custName == "":
             CSRWidgets.setCustomerName(self)
+        print("hit load design")
         
+        CSRWidgets.updateOrderDetails(self)
+               
     def undo(self):
         print("this will \"undo\" items added to the order.")
         self.searchBar.clear()
@@ -167,7 +149,7 @@ class CSRWidgets(QWidget):
         self.setCentralWidget(self.scrollWidget)
         
     def loadGarmentInfo(self,sku_code,garment_type,garment_name,design_name):
-         
+
         print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
@@ -244,7 +226,7 @@ class CSRWidgets(QWidget):
                 kiddo.setText(1, i[2])
                 kiddo.setText(3,"")
                 kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
-                kiddo.setText(4,"      -")
+                kiddo.setText(4,"-")
                 
                 nm.setExpanded(True)
                 sku.setExpanded(True)
@@ -498,7 +480,6 @@ class CSRWidgets(QWidget):
                 
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        
-        self.vBox.addWidget(self.garmentTree)
         
         self.treeDock.setWidget(self.garmentTree)
         self.addDockWidget(Qt.RightDockWidgetArea, self.treeDock)
@@ -513,12 +494,6 @@ class CSRWidgets(QWidget):
             
         CSRWidgets.updateOrderDetails(self)
         
-    #This function is needed for creating multiple lambda connections in a loop
-    #NOT USING THIS FUNCTION STARTING WITH BRANCH 4.
-    def make_callback(self,sku_code,garment_name):
-        return lambda: CSRWidgets.sumQuantity(self, sku_code, garment_name)
-
-      
     def sumQuantity(self, column):
 
         if self.text(column) and self.childCount() == 0 and self.parent() != None:
@@ -557,40 +532,75 @@ class CSRWidgets(QWidget):
             #Output    
             self.parent().setText(3,newSum)
             self.setText(3,newNum)
-
-
                       
     def updateOrderDetails(self):
-
-        lstItems = []
-
-        itOrders = QTreeWidgetItemIterator(self.garmentTree)
-        while itOrders.value():
-            if itOrders.value() != None:
-                if itOrders.value().text(3) != "" and itOrders.value().text(2) != "":
-                    if itOrders.value().parent().parent() != None:
-                        txtItems = []
-                        txtItems = [itOrders.value().parent().parent().text(0), itOrders.value().parent().text(0), itOrders.value().text(0),
-                                    itOrders.value().text(1), str(format(float(itOrders.value().text(2)) * float(itOrders.value().text(3)), '.2f')), 
-                                    itOrders.value().text(3)]
-                        lstItems.append(txtItems)
-            itOrders += 1
-        print(lstItems)
-
-        CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))   
-        print(len(lstItems))
-        
-        for i, row in enumerate(lstItems):
-            for j, col in enumerate(row):
-                item = QTableWidgetItem(col)
-                item.setFlags(Qt.ItemIsEditable)
-                CSRWidgets.tblOrderDetails.setItem(i, j, item)         
-        self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+        # If there is already a garment tree we want to clear out the old lists we do this to catch in an error
+        # in case this function get's called before there is a tree build or grown, ha ha.
+        if self.garmentTree:
+            lstItems = []
+            # Open a iterator to iterate through the tree (again) and build a list of lists of items in the tree to be added to the table.
+            itOrders = QTreeWidgetItemIterator(self.garmentTree)
+            while itOrders.value():
+                if itOrders.value() != None:
+                    # Below makes sure that there are values for both the price and the quantity.
+                    if itOrders.value().text(3) != "" and itOrders.value().text(2) != "":
+                        # This makes sure that we are at the correct level in the tree so we do try to add what shouldn't be added
+                        if itOrders.value().parent().parent().parent() != None:
+                            txtItems = []
+                            txtItems = [itOrders.value().parent().parent().parent().text(0), itOrders.value().parent().parent().text(0), 
+                                        itOrders.value().parent().text(0), itOrders.value().text(0), itOrders.value().text(1), 
+                                        str(format(float(itOrders.value().text(2)) * float(itOrders.value().text(3)), '.2f')), 
+                                        itOrders.value().text(3)]
+                            lstItems.append(txtItems)
+                itOrders += 1
+            # A check to make sure the iterator picked up items from the list.
+            if len(lstItems) > 0:
+                # Build the table to hold the information from the tree.
+                CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))
+                CSRWidgets.tblOrderDetails.setColumnCount(7)
+                CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
+                lstHeader = ["Name", "Design", "Category", "Type", "Size", "Price", "Qty" ]     
+                CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
+                CSRWidgets.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+                CSRWidgets.tblOrderDetails.setWordWrap(False)
+                # Another check to make sure the list is there and has data, then we go through it and add data to the table.
+                if lstItems:
+                    for i, row in enumerate(lstItems):
+                        for j, col in enumerate(row):
+                            item = QTableWidgetItem(col)
+                            item.setFlags(Qt.ItemIsEditable)
+                            CSRWidgets.tblOrderDetails.setItem(i, j, item)      
+                    
+                    CSRWidgets.tblOrderDetails.resizeColumnsToContents()    
+                    self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+                    CSRWidgets.tblOrderDetails.show() 
+                    print("hit update orders")                      
         
     def setCustomerName(self):
-        print('no name')
         inCustName, ok = QInputDialog.getText(self, "Enter Name", "Please Enter Name:")
         if ok:
-            print(inCustName)
             self.custName = inCustName
             self.lblCustName.setText(inCustName)
+
+    def updateNameDesign(self):
+        treeName = self.sender()
+        if str(treeName.objectName()) == 'garmentTree':
+            #If top level (Name) node is selected.
+            if treeName.currentItem().parent() == None:
+                self.lblCustName.setText(treeName.currentItem().text(0))
+                self.lblSkuName.setText(treeName.currentItem().child(0).text(0))
+            #Fourth tree node selected (sizes)
+            elif treeName.currentItem().child(0) == None:
+                self.lblCustName.setText(treeName.currentItem().parent().parent().parent().text(0)) 
+                self.lblSkuName.setText(treeName.currentItem().parent().parent().text(0))               
+            #Second tree node is selected (Sku)
+            elif treeName.currentItem().child(0).child(0) != None and treeName.currentItem().parent() != None:
+                self.lblCustName.setText(treeName.currentItem().parent().text(0))
+                self.lblSkuName.setText(treeName.currentItem().text(0))
+            #Third tree node selected (garment, T-Shirts)
+            elif treeName.currentItem().child(0) != None and treeName.currentItem().parent().parent() != None:
+                self.lblCustName.setText(treeName.currentItem().parent().parent().text(0))
+                self.lblSkuName.setText(treeName.currentItem().parent().text(0))    
+                
+        CSRWidgets.loadDesignItem(self, self.lblSkuName.text())         
+        #CSRWidgets.updateOrderDetails(self)        

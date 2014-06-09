@@ -2,12 +2,13 @@ from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
                              QTreeWidgetItemIterator, QPushButton, QLabel)
+from PyQt5.QtGui import QFont
 from csrLogic import CSRWidgets
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        print('I was here')
+
         self.custName = ""
         self.setUpMenus()
        
@@ -65,11 +66,18 @@ class MainWindow(QMainWindow):
         btnNameChange = QPushButton('Change Name', self)
         btnNameChange.clicked.connect(lambda: CSRWidgets.setCustomerName(self))
         
+        
         self.lblCustName = QLabel()
+        self.lblCustName.setFont(QFont('Veranda', 14, QFont.Bold))
+        self.lblCustName.setMargin(10)
+        
+        self.lblSkuName = QLabel()
+        self.lblSkuName.setFont(QFont('Veranda', 14, QFont.Bold))
+        self.lblSkuName.setMargin(10)
         
         self.searchToolBar.addWidget(btnNameChange)
         self.searchToolBar.addWidget(self.lblCustName)
-        
+        self.searchToolBar.addWidget(self.lblSkuName)
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
@@ -100,17 +108,15 @@ class MainWindow(QMainWindow):
         
         #Create a tree widget for use when the t-shirt is clicked.
         self.treeDock = QDockWidget("Order Items", self)
-        self.garmentTree = QTreeWidget(self.treeDock)        
+        self.garmentTree = QTreeWidget(self.treeDock)
+        self.garmentTree.setObjectName('garmentTree')
         self.garmentTree.itemClicked.connect(CSRWidgets.sumQuantity)
-        self.garmentTree.itemClicked.connect(lambda: CSRWidgets.updateOrderDetails(self))
+        self.garmentTree.itemClicked.connect(lambda: CSRWidgets.updateNameDesign(self))
             
         self.garmentTree.setMaximumWidth(480)
         self.garmentTree.setMinimumWidth(480)
-        #self.sku = QTreeWidgetItem(self.garmentTree)
-        #self.garmName = QTreeWidgetItem()
    
         self.treeDock.hide()
-        
         
     def btnSale_Click(self):
         btnName = self.sender()
