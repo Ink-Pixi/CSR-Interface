@@ -1,3 +1,4 @@
+import sys
 from PyQt5.QtCore import Qt
 #from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget,
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
         self.createDockWindows()
         
     def about(self):
-        QMessageBox.about(self, "sup?", "nothin, sup with you?")
+        QMessageBox.about(self, "C3PO", "His high exaltedness, the Great Jabba the Hutt, has decreed that you are to be terminated immediately.")
 
     def createMenus(self):
         CSRWidgets.createActions(self)
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
         self.searchToolBar.addSeparator()
         
         btnNameChange = QPushButton('Change Name', self)
-        btnNameChange.clicked.connect(lambda: CSRWidgets.setCustomerName(self))
+        btnNameChange.clicked.connect(lambda: CSRWidgets.getCustomerName(self))
         
         
         self.lblCustName = QLabel()
@@ -149,7 +150,6 @@ class MainWindow(QMainWindow):
         CSRWidgets.loadGarmentInfo(self, self.currentInfo[txtItem][2], self.currentInfo[txtItem][1], self.currentInfo[txtItem][0], self.currentInfo[txtItem][6])
         #self.garmName.setExpanded(False)
 if __name__ == '__main__':
-    import sys
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")

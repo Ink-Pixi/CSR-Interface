@@ -117,16 +117,14 @@ class CSRWidgets(QWidget):
         CSRWidgets.tblOrderDetails = QTableWidget(7, 0)
         CSRWidgets.tblOrderDetails.hide()
         
-        self.vBox.addWidget(CSRWidgets.tblOrderDetails)
         self.vBox.addWidget(hFrame)
-       
+        self.vBox.addWidget(CSRWidgets.tblOrderDetails)       
         self.vBox.addStretch(1)
 
         CSRWidgets.changeCentralWidget(self, self.vBox)
         
         if self.custName == "":
-            CSRWidgets.setCustomerName(self)
-        print("hit load design")
+            CSRWidgets.getCustomerName(self)
         
         CSRWidgets.updateOrderDetails(self)
                
@@ -473,11 +471,6 @@ class CSRWidgets(QWidget):
                     #print(le.objectName())
                 
                 
-                
-                
-                
-                
-                
         self.treeDock.show()
         self.viewMenu.addAction(self.treeDock.toggleViewAction())        
         
@@ -561,7 +554,7 @@ class CSRWidgets(QWidget):
                 CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
                 lstHeader = ["Name", "Design", "Category", "Type", "Size", "Price", "Qty" ]     
                 CSRWidgets.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
-                CSRWidgets.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+                #CSRWidgets.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
                 CSRWidgets.tblOrderDetails.setWordWrap(False)
                 # Another check to make sure the list is there and has data, then we go through it and add data to the table.
                 if lstItems:
@@ -572,15 +565,18 @@ class CSRWidgets(QWidget):
                             CSRWidgets.tblOrderDetails.setItem(i, j, item)      
                     
                     CSRWidgets.tblOrderDetails.resizeColumnsToContents()    
-                    self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+                    #self.vBox.addWidget(CSRWidgets.tblOrderDetails)
                     CSRWidgets.tblOrderDetails.show() 
                     print("hit update orders")                      
         
-    def setCustomerName(self):
+    def getCustomerName(self):
         inCustName, ok = QInputDialog.getText(self, "Enter Name", "Please Enter Name:")
         if ok:
-            self.custName = inCustName
-            self.lblCustName.setText(inCustName)
+            CSRWidgets.setCustomerName(self, inCustName)
+    
+    def setCustomerName(self, CustName):
+        self.custName = CustName
+        self.lblCustName.setText(CustName)
 
     def updateNameDesign(self):
         treeName = self.sender()
@@ -589,18 +585,22 @@ class CSRWidgets(QWidget):
             if treeName.currentItem().parent() == None:
                 self.lblCustName.setText(treeName.currentItem().text(0))
                 self.lblSkuName.setText(treeName.currentItem().child(0).text(0))
+                self.custName = (treeName.currentItem().text(0))
             #Fourth tree node selected (sizes)
             elif treeName.currentItem().child(0) == None:
                 self.lblCustName.setText(treeName.currentItem().parent().parent().parent().text(0)) 
-                self.lblSkuName.setText(treeName.currentItem().parent().parent().text(0))               
+                self.lblSkuName.setText(treeName.currentItem().parent().parent().text(0))
+                self.custName = (treeName.currentItem().parent().parent().parent().text(0))               
             #Second tree node is selected (Sku)
             elif treeName.currentItem().child(0).child(0) != None and treeName.currentItem().parent() != None:
                 self.lblCustName.setText(treeName.currentItem().parent().text(0))
                 self.lblSkuName.setText(treeName.currentItem().text(0))
+                self.custName = (treeName.currentItem().parent().text(0))
             #Third tree node selected (garment, T-Shirts)
             elif treeName.currentItem().child(0) != None and treeName.currentItem().parent().parent() != None:
                 self.lblCustName.setText(treeName.currentItem().parent().parent().text(0))
                 self.lblSkuName.setText(treeName.currentItem().parent().text(0))    
+                self.custName = (treeName.currentItem().parent().parent().text(0))
                 
         CSRWidgets.loadDesignItem(self, self.lblSkuName.text())         
         #CSRWidgets.updateOrderDetails(self)        
