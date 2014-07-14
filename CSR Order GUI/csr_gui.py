@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         
         self.searchToolBar.addSeparator()
         
-        btnNameChange = QPushButton('Change Name', self)
+        btnNameChange = QPushButton('Add New Name', self)
         btnNameChange.clicked.connect(lambda: CSRWidgets.getCustomerName(self))
         
         
@@ -90,7 +90,6 @@ class MainWindow(QMainWindow):
         self.availableItems.setMinimumWidth(350)
         self.availableItems.setMaximumWidth(350)
         #self.availableItems.addItems(("stuff"))
-        #self.availableItems.itemClicked.connect(self.itemClicked_Click)
         self.availableItems.itemClicked.connect(self.itemClicked_Click)
         dock.setWidget(self.availableItems)
         self.addDockWidget(Qt.RightDockWidgetArea, dock)

@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QVBoxLayout, QFrame, QLabel, 
-                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem,
-                             QSizePolicy, QInputDialog)
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QFrame, QLabel, QVBoxLayout,
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem, QInputDialog)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
@@ -66,15 +65,15 @@ class CSRWidgets(QWidget):
 
         des = mysql_db.designInfo(self, sku_code)
         
-        self.vBox = QVBoxLayout()
+        #self.vBox = QVBoxLayout()
+        self.winGrid = QGridLayout()
         
         if not des:
-            lblOpps = QLabel("We could put a .png or something here, something better than text, to let the CSR's know that " + \
-                             "they searched an empty string or that the design they were looking for does not exist or that " + \
-                             "they mistyped what they were looking for.", self)
+            lblOpps = QLabel("""We could put a .png or something here, something better than text, to let the CSR's know that 
+                             they searched an empty string or that the design they were looking for does not exist or that 
+                             they mistyped what they were looking for.""", self)
             self.grid.addWidget(lblOpps)
             CSRWidgets.changeCentralWidget(self, self.vBox)
-        print(des)        
 
         self.currentInfo = {}
         for i in des:
@@ -111,22 +110,43 @@ class CSRWidgets(QWidget):
         
         hFrame = QFrame()
         hFrame.setLayout(hBox)
+        hFrame.setMaximumHeight(200)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
         
         #Create table to hold and display details of order order as they are selected from the tree. 
         CSRWidgets.tblOrderDetails = QTableWidget(7, 0)
         CSRWidgets.tblOrderDetails.hide()
-        
-        self.vBox.addWidget(hFrame)
-        self.vBox.addWidget(CSRWidgets.tblOrderDetails)       
-        self.vBox.addStretch(1)
+        #CSRWidgets.tblOrderDetails.setMaximumHeight(250)
 
-        CSRWidgets.changeCentralWidget(self, self.vBox)
+        
+        self.winGrid.addWidget(hFrame, 0, 0, 2, 2)
+        #self.vBox.addWidget(hFrame)
+        #self.vBox.addWidget(CSRWidgets.tblOrderDetails)
+        self.winGrid.addWidget(CSRWidgets.tblOrderDetails, 2, 0, 1, 1)
+        #self.winGrid.addWidget(CSRWidgets.totalBox, 2, 1, 1, 1)       
+        #self.vBox.addStretch(1)
+
+        CSRWidgets.changeCentralWidget(self, self.winGrid)
         
         if self.custName == "":
             CSRWidgets.getCustomerName(self)
         
         CSRWidgets.updateOrderDetails(self)
+        
+    def totalBox(self):
+        lblTest = QLabel("test")
+        lblSomething = QLabel("something else")
+        
+        totBox = QVBoxLayout()
+        totBox.addWidget(lblTest)
+        totBox.addWidget(lblSomething)
+        totBox.addStretch()
+        
+        tFrame = QFrame()
+        tFrame.setLayout(totBox)
+        tFrame.setMinimumWidth(350)
+        
+        return tFrame
                
     def undo(self):
         print("this will \"undo\" items added to the order.")
@@ -148,7 +168,7 @@ class CSRWidgets(QWidget):
         
     def loadGarmentInfo(self,sku_code,garment_type,garment_name,design_name):
 
-        print(garment_type)
+        #print(garment_type)
         #Query the database to get all garments available for this particular SKU.      
         garm = mysql_db.garmentInfo(self, sku_code, garment_type)
         columnList = ["Design", "Size","Price", "Qty",""]
@@ -196,6 +216,12 @@ class CSRWidgets(QWidget):
             garmName.setBackground(3, QColor(230,230,230,127))
             garmName.setBackground(4, QColor(230,230,230,127))
             
+            removeName = QToolButton(self)
+            removeName.setIcon(QIcon("Icon/close-widget.png"))
+            removeName.setIconSize(QSize(14,14))
+            removeName.setAutoRaise(True)
+            removeName.clicked.connect(lambda: CSRWidgets.remove_widget(self))
+            
             removeSku = QToolButton(self)
             removeSku.setIcon(QIcon("icon/close-widget.png"))
             removeSku.setIconSize(QSize(14, 14))
@@ -212,6 +238,7 @@ class CSRWidgets(QWidget):
             CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
             CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
             
+            self.garmentTree.setItemWidget(nm, 4, removeName)
             self.garmentTree.setItemWidget(sku, 4, removeSku)
             self.garmentTree.setItemWidget(garmName, 4, removeGarment)              
             self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
@@ -255,10 +282,10 @@ class CSRWidgets(QWidget):
                 itSku += 1
 
             if name_match == 1:
-                print("NAME MATCHED!!!!!!!!")
+                #print("NAME MATCHED!!!!!!!!")
                 #if the SKU we've selected already exists in the tree, check to see if the garment we've selected exists also   
                 if sku_match == 1:
-                    print("SKU MATCHED!!!")
+                    #print("SKU MATCHED!!!")
                     garm_match = 0
                     #print("already", sku_code)
                     #Create an iterator to iterate through all the elements in the tree.
@@ -318,7 +345,7 @@ class CSRWidgets(QWidget):
                                     kiddo.setText(1, i[2])
                                     kiddo.setText(3,"")
                                     kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
-                                    kiddo.setText(4,"      -")
+                                    kiddo.setText(4,"-")
                                     itSizes.value().setExpanded(True)
                                     garmName.setExpanded(True)
                                     kiddo.setExpanded(True)
@@ -329,7 +356,7 @@ class CSRWidgets(QWidget):
                     
                 #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
                 else:
-                    print("SAME NAME, DIFFERENT SKU!!!!! SKU = " + sku_code + " -- Name = " + self.custName)                       
+                    #print("SAME NAME, DIFFERENT SKU!!!!! SKU = " + sku_code + " -- Name = " + self.custName)                       
                             
                     iterNewSku =  QTreeWidgetItemIterator(self.garmentTree) 
                     
@@ -385,6 +412,7 @@ class CSRWidgets(QWidget):
                                     kiddo.setText(1, i[2])
                                     kiddo.setText(3,"")
                                     kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold))
+                                    kiddo.setText(4,"-")
                                     #nm.setExpanded(True)
                                     sku.setExpanded(True)
                                     garmName.setExpanded(True)
@@ -395,12 +423,8 @@ class CSRWidgets(QWidget):
                         iterNewSku += 1
 
                         
-                        
-                        
-                        
-                        
             else:
-                print("NEW NAME")
+                #print("NEW NAME")
 
                 CSRWidgets.lblTotal = {}
                 nm = QTreeWidgetItem(self.garmentTree)
@@ -462,7 +486,7 @@ class CSRWidgets(QWidget):
                     kiddo.setText(1, i[2])
                     kiddo.setText(3,"")
                     kiddo.setFont(3, QFont("Helvetica",10,QFont.Bold) )
-                    kiddo.setText(4,"      -")
+                    kiddo.setText(4,"-")
                     
                     nm.setExpanded(True)
                     sku.setExpanded(True)
@@ -481,6 +505,9 @@ class CSRWidgets(QWidget):
         btn = self.sender()
         btn.setFocus()
         root = self.garmentTree.invisibleRootItem()
+        
+        rootParent = self.garmentTree.invisibleRootItem()
+        print(rootParent.parent())
         
         for item in self.garmentTree.selectedItems():
             (item.parent() or root).removeChild(item)        
@@ -531,6 +558,7 @@ class CSRWidgets(QWidget):
         # in case this function get's called before there is a tree build or grown, ha ha.
         if self.garmentTree:
             lstItems = []
+            print("there is a garment tree, and I saw it!")
             # Open a iterator to iterate through the tree (again) and build a list of lists of items in the tree to be added to the table.
             itOrders = QTreeWidgetItemIterator(self.garmentTree)
             while itOrders.value():
@@ -549,6 +577,7 @@ class CSRWidgets(QWidget):
             # A check to make sure the iterator picked up items from the list.
             if len(lstItems) > 0:
                 # Build the table to hold the information from the tree.
+                print("The list has an item in it.")
                 CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))
                 CSRWidgets.tblOrderDetails.setColumnCount(7)
                 CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
@@ -567,7 +596,12 @@ class CSRWidgets(QWidget):
                     CSRWidgets.tblOrderDetails.resizeColumnsToContents()    
                     #self.vBox.addWidget(CSRWidgets.tblOrderDetails)
                     CSRWidgets.tblOrderDetails.show() 
-                    print("hit update orders")                      
+                    testBox = CSRWidgets.totalBox(self)
+                    self.winGrid.addWidget(testBox, 2, 1, 1, 1)
+                    #print("hit update orders")  
+            else:
+                CSRWidgets.tblOrderDetails.hide()        
+   
         
     def getCustomerName(self):
         inCustName, ok = QInputDialog.getText(self, "Enter Name", "Please Enter Name:")
