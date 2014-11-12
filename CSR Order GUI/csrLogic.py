@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QFrame, QLabel, QVBoxLayout,
                              QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem, QInputDialog)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, QUrl
 from queries import mysql_db
 from builtins import super
+from PyQt5.QtWebKitWidgets import QWebView
+
 
 
 class CSRWidgets(QWidget):
@@ -64,7 +66,9 @@ class CSRWidgets(QWidget):
     def loadDesignItem(self, sku_code):
 
         des = mysql_db.designInfo(self, sku_code)
-        
+
+
+               
         #self.vBox = QVBoxLayout()
         self.winGrid = QGridLayout()
         
@@ -74,28 +78,35 @@ class CSRWidgets(QWidget):
                              they mistyped what they were looking for.""", self)
             self.grid.addWidget(lblOpps)
             CSRWidgets.changeCentralWidget(self, self.vBox)
+            
+
 
         self.currentInfo = {}
         for i in des:
             CSRWidgets.item = QListWidgetItem()
             CSRWidgets.item.setText(str(i[7]))         
-            self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]),str(i[1]))
-        smImage = self.currentInfo['T-Shirts'][3]
+            self.currentInfo[i[7]] = (str(i[7]),str(i[8]),str(i[3]),str(i[9]),str(i[10]),str(i[11]),str(i[1]),str(i[4]))
+        #grab the last 3 characters from the inventories.inventories_code field for color........it sucks I know, but it's the only place the color code exists.
+        self.colorCode = self.currentInfo['T-Shirts'][7][-3:]
+        self.imgSkuCode = str(i[3])
 
-        hBox = QHBoxLayout()
+        self.hBox = QHBoxLayout()
+         
         
-        pix = QLabel()
-        smImg = QPixmap("//wampserver/"+ smImage)
-        myScaledPixmap = smImg.scaled(125,125, Qt.KeepAspectRatio)
-        pix.setPixmap(myScaledPixmap)
+        #pix = QLabel()
+        #smImg = QPixmap("//wampserver/"+ smImage)
+        #smImg = QPixmap("//wampserver/store/img/A160/100/K01/test")
+        #myScaledPixmap = smImg.scaled(125,125, Qt.KeepAspectRatio)
+        #pix.setPixmap(myScaledPixmap)
 
-        hBox.addWidget(pix)
+        #hBox.addWidget(self.webView)
+
        
         icons = {}
         for i in des:
             icons[(i)] = QToolButton(self)
             icons[(i)].setIcon(QIcon("//wampserver/" + str(i[10])))
-            icons[(i)].setIconSize(QSize(44, 44))
+            icons[(i)].setIconSize(QSize(33, 33))
             icons[(i)].setAutoRaise(True)
             icons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             #icons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
@@ -104,12 +115,12 @@ class CSRWidgets(QWidget):
             icons[(i)].setText(str(i[7]) + '\n' + str(i[3]))
             icons[(i)].uniqueId = str(i[7])
             icons[(i)].clicked.connect(self.itemClicked_Click)
-            hBox.addWidget(icons[(i)])
+            self.hBox.addWidget(icons[(i)])
         
-        hBox.addStretch(1)
+        self.hBox.addStretch(1)
         
         hFrame = QFrame()
-        hFrame.setLayout(hBox)
+        hFrame.setLayout(self.hBox)
         hFrame.setMaximumHeight(200)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
         
@@ -611,6 +622,15 @@ class CSRWidgets(QWidget):
     def setCustomerName(self, CustName):
         self.custName = CustName
         self.lblCustName.setText(CustName)
+        #load the dynamic image after we get the name
+        CSRWidgets.loadDynamicImage(self, self.custName)
+        
+    def loadDynamicImage(self, CustName):
+        self.webView = QWebView()
+        address = 'http://wampserver/store/img/' + self.imgSkuCode + '/100/' + self.colorCode + '/' + self.custName
+        url = QUrl(address)
+        self.webView.load(url)
+        self.hBox.addWidget(self.webView)
 
     def updateNameDesign(self):
         treeName = self.sender()
