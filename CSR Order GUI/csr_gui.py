@@ -11,8 +11,6 @@ class MainWindow(QMainWindow):
     var1 = ""
     var2 = ""
     
-    txtVar1 = ""
-    txtVar2 = ""
     
     def __init__(self):
         super(MainWindow, self).__init__()
