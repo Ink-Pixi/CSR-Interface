@@ -3,8 +3,6 @@ from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLa
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
-#from builtins import super
-
 
 class CSRWidgets(QWidget):
     def __init__(self):
