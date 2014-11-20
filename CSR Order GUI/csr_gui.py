@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow
                              QTreeWidgetItemIterator, QPushButton, QLabel)
 from PyQt5.QtGui import QFont
 from csrLogic import CSRWidgets
-from queries import mysql_db
 
 class MainWindow(QMainWindow):
     var1 = ""

@@ -641,6 +641,7 @@ class CSRWidgets(QWidget):
                 self.orderVars = self.lblTxtVar1.text()
             else:
                 self.var2 = self.lblTxtVar2.text()
+                self.var1 = self.lblTxtVar1.text()
                 self.orderVars = self.var1 + " :: " + self.var2
                 
         
@@ -685,7 +686,7 @@ class CSRWidgets(QWidget):
                 else:
                     self.lblTxtVar1.setText(var)
                     self.lblVar2.hide()
-                    self.lblTxtVar2.hide                    
+                    self.lblTxtVar2.hide()                   
                 skuCode = treeName.currentItem().text(0)
                 self.orderVars = (treeName.currentItem().parent().text(0))
             #Third tree node selected (garment, T-Shirts)
