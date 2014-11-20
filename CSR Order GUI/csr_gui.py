@@ -5,12 +5,18 @@ from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow
                              QTreeWidgetItemIterator, QPushButton, QLabel)
 from PyQt5.QtGui import QFont
 from csrLogic import CSRWidgets
+from queries import mysql_db
 
 class MainWindow(QMainWindow):
+    var1 = ""
+    var2 = ""
+    
+    txtVar1 = ""
+    txtVar2 = ""
+    
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.custName = ""
         self.setUpMenus()
        
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self, 'default')) #Sets central widget on init.
@@ -57,6 +63,7 @@ class MainWindow(QMainWindow):
         
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(150)
+        self.searchBar.returnPressed.connect(self.btnSearch_Click)
         self.searchToolBar.addWidget(self.searchBar)
         
         self.searchToolBar.addSeparator()
@@ -64,20 +71,36 @@ class MainWindow(QMainWindow):
         
         self.searchToolBar.addSeparator()
         
-        btnNameChange = QPushButton('Add New Name', self)
-        btnNameChange.clicked.connect(lambda: CSRWidgets.getCustomerName(self))
+        btnNameChange = QPushButton('Change Name', self)
+        btnNameChange.clicked.connect(self.btnNameChange_Click)
         
+        self.lblVar1 = QLabel()
+        self.lblVar1.setFont(QFont('Veranda', 14, QFont.Bold))
+        #self.lblVar1.setMargin(10)
+        self.lblVar1.setStyleSheet('padding-left:10px')
         
-        self.lblCustName = QLabel()
-        self.lblCustName.setFont(QFont('Veranda', 14, QFont.Bold))
-        self.lblCustName.setMargin(10)
+        self.lblTxtVar1 = QLabel()
+        self.lblTxtVar1.setFont(QFont('Veranda', 14, QFont.Bold))
+        #self.lblTxtVar1.setMargin(0)
+        self.lblTxtVar1.setStyleSheet('padding-left:1px')
+        
+        self.lblVar2 = QLabel()
+        self.lblVar2.setFont(QFont('Veranda', 14, QFont.Bold))
+        self.lblVar2.setMargin(10)  
+        
+        self.lblTxtVar2 = QLabel()
+        self.lblTxtVar2.setFont(QFont('Veranda', 14, QFont.Bold))
+        self.lblTxtVar2.setMargin(0)              
         
         self.lblSkuName = QLabel()
         self.lblSkuName.setFont(QFont('Veranda', 14, QFont.Bold))
         self.lblSkuName.setMargin(10)
         
         self.searchToolBar.addWidget(btnNameChange)
-        self.searchToolBar.addWidget(self.lblCustName)
+        self.searchToolBar.addWidget(self.lblVar1)
+        self.searchToolBar.addWidget(self.lblTxtVar1)
+        self.searchToolBar.addWidget(self.lblVar2)
+        self.searchToolBar.addWidget(self.lblTxtVar2)
         self.searchToolBar.addWidget(self.lblSkuName)
 
     def createStatusBar(self):
@@ -121,7 +144,24 @@ class MainWindow(QMainWindow):
     def btnSale_Click(self):
         btnName = self.sender()
         sku_code = str(btnName.objectName())
+#         #print(sku_code)
+#         sv = mysql_db.getSecondVar(self, sku_code)
+#         if self.var1 == "":
+#             CSRWidgets.getCustomerName(self, sku_code)
+#         elif self.var1 != "" and not self.var2:
+#             sv = mysql_db.getSecondVar(self, sku_code)
+#             print(sv)
+#             if sv:
+#                 CSRWidgets.getCustomerName(self, sku_code)
+#             else:
+#                 self.var2 = None
+#                 self.lblVar2.hide()
+#                 self.lblTxtVar2.hide()
+        
         CSRWidgets.loadDesignItem(self, sku_code)
+        
+    def btnNameChange_Click(self):
+        CSRWidgets.changeCustName(self)
         
     def btnHome_Click(self):
         CSRWidgets.changeCentralWidget(self, CSRWidgets.createDesignButtons(self,'default'))

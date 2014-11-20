@@ -1,14 +1,14 @@
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QToolButton, QAction, QHBoxLayout, QFrame, QLabel, QVBoxLayout,
-                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem, QInputDialog)
+                             QListWidgetItem, QScrollArea, QTreeWidgetItemIterator, QTreeWidgetItem, QTableWidget, QTableWidgetItem, QInputDialog, QApplication)
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QFont, QColor
 from PyQt5.QtCore import QSize, Qt
 from queries import mysql_db
-from builtins import super
+#from builtins import super
 
 
 class CSRWidgets(QWidget):
     def __init__(self):
-        super(self, self).__init__()    
+        super(CSRWidgets, self).__init__()    
    
     def createDesignButtons(self, qryId):
         btnLayout = QGridLayout()       
@@ -62,7 +62,7 @@ class CSRWidgets(QWidget):
                                statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
       
     def loadDesignItem(self, sku_code):
-
+        self.lblSkuName.setText(sku_code)
         des = mysql_db.designInfo(self, sku_code)
         
         #self.vBox = QVBoxLayout()
@@ -128,10 +128,9 @@ class CSRWidgets(QWidget):
 
         CSRWidgets.changeCentralWidget(self, self.winGrid)
         
-        if self.custName == "":
-            CSRWidgets.getCustomerName(self)
-        
         CSRWidgets.updateOrderDetails(self)
+        
+        CSRWidgets.getCustomerName(self, sku_code)
         
     def totalBox(self):
         lblTest = QLabel("test")
@@ -187,7 +186,7 @@ class CSRWidgets(QWidget):
             #print("NEW PARENT NODE")
             CSRWidgets.lblTotal = {}
             nm = QTreeWidgetItem(self.garmentTree)
-            nm.setText(0, self.custName)
+            nm.setText(0, self.orderVars)
             nm.setBackground(0, QColor(180,180,180,127))
             nm.setBackground(1, QColor(180,180,180,127))
             nm.setBackground(2, QColor(180,180,180,127))
@@ -269,11 +268,11 @@ class CSRWidgets(QWidget):
 
             #iterate through all tree items and see if anything matches the SKU we selected.           
             while itSku.value():
-                if itSku.value().text(0) == self.custName:
+                if itSku.value().text(0) == self.orderVars:
                     name_match = 1
                     #print("NAME MATCHED!!!")
                 #If the SKU we selected exists somewhere in the tree, set variable to indicate that.
-                if itSku.value().text(0) == sku_code and itSku.value().parent().text(0) == self.custName:
+                if itSku.value().text(0) == sku_code and itSku.value().parent().text(0) == self.orderVars:
                     sku_match = 1
                     #print("SKU MATCHED!!!")
                 #Collapse all non-parent nodes so we can selectively open the nodes we are currently working on below.
@@ -293,7 +292,7 @@ class CSRWidgets(QWidget):
                     #Open up iterator
                     while itGarment.value():
                         #If BOTH the SKU and garment already exist in the tree, just expand it while collapsing all other items.
-                        if itGarment.value().text(0) == garment_name and itGarment.value().parent().text(0) == sku_code and itGarment.value().parent().parent().text(0) == self.custName:
+                        if itGarment.value().text(0) == garment_name and itGarment.value().parent().text(0) == sku_code and itGarment.value().parent().parent().text(0) == self.orderVars:
                             #itGarment.value().parent().setExpanded(True)
                             #itGarment.value().setExpanded(True)
                             garm_match = 1
@@ -310,7 +309,7 @@ class CSRWidgets(QWidget):
                         itSizes = QTreeWidgetItemIterator(self.garmentTree)
                         while itSizes.value():
                             #When the iterator hits the correct SKU, create the new garment node that doesn't exist yet.                         
-                            if itSizes.value().text(0) == sku_code and itSizes.value().parent().text(0) == self.custName:
+                            if itSizes.value().text(0) == sku_code and itSizes.value().parent().text(0) == self.orderVars:
                                 #If the garment name does not exist we want to create a node for it. 
                                 garmName = QTreeWidgetItem(itSizes.value())
                                 garmName.setText(0, garment_name)
@@ -356,14 +355,14 @@ class CSRWidgets(QWidget):
                     
                 #If the SKU does NOT exist in the tree yet, but others already do, create this particular SKU.
                 else:
-                    #print("SAME NAME, DIFFERENT SKU!!!!! SKU = " + sku_code + " -- Name = " + self.custName)                       
+                    #print("SAME NAME, DIFFERENT SKU!!!!! SKU = " + sku_code + " -- Name = " + self.orderVars)                       
                             
                     iterNewSku =  QTreeWidgetItemIterator(self.garmentTree) 
                     
                     while iterNewSku.value():
                         
                         if iterNewSku.value().childCount() > 0:
-                            if iterNewSku.value().text(0) == self.custName:
+                            if iterNewSku.value().text(0) == self.orderVars:
                                                   
                                 sku = QTreeWidgetItem(iterNewSku.value())     
                                 sku.setText(0, sku_code)
@@ -417,8 +416,6 @@ class CSRWidgets(QWidget):
                                     sku.setExpanded(True)
                                     garmName.setExpanded(True)
                                     kiddo.setExpanded(True)
-                                    print('i in garm ' + str(i))
-                            
                             
                         iterNewSku += 1
 
@@ -428,7 +425,7 @@ class CSRWidgets(QWidget):
 
                 CSRWidgets.lblTotal = {}
                 nm = QTreeWidgetItem(self.garmentTree)
-                nm.setText(0, self.custName)
+                nm.setText(0, self.orderVars)
                 nm.setBackground(0, QColor(180,180,180,127))
                 nm.setBackground(1, QColor(180,180,180,127))
                 nm.setBackground(2, QColor(180,180,180,127))
@@ -558,7 +555,6 @@ class CSRWidgets(QWidget):
         # in case this function get's called before there is a tree build or grown, ha ha.
         if self.garmentTree:
             lstItems = []
-            print("there is a garment tree, and I saw it!")
             # Open a iterator to iterate through the tree (again) and build a list of lists of items in the tree to be added to the table.
             itOrders = QTreeWidgetItemIterator(self.garmentTree)
             while itOrders.value():
@@ -577,7 +573,6 @@ class CSRWidgets(QWidget):
             # A check to make sure the iterator picked up items from the list.
             if len(lstItems) > 0:
                 # Build the table to hold the information from the tree.
-                print("The list has an item in it.")
                 CSRWidgets.tblOrderDetails.setRowCount(len(lstItems))
                 CSRWidgets.tblOrderDetails.setColumnCount(7)
                 CSRWidgets.tblOrderDetails.setAlternatingRowColors(True)
@@ -593,7 +588,8 @@ class CSRWidgets(QWidget):
                             item.setFlags(Qt.ItemIsEditable)
                             CSRWidgets.tblOrderDetails.setItem(i, j, item)      
                     
-                    CSRWidgets.tblOrderDetails.resizeColumnsToContents()    
+                    CSRWidgets.tblOrderDetails.resizeColumnsToContents()  
+                      
                     #self.vBox.addWidget(CSRWidgets.tblOrderDetails)
                     CSRWidgets.tblOrderDetails.show() 
                     testBox = CSRWidgets.totalBox(self)
@@ -602,39 +598,173 @@ class CSRWidgets(QWidget):
             else:
                 CSRWidgets.tblOrderDetails.hide()        
    
+    def getCustomerName(self, sku_code = None):
+        #Grabs the last var2 that was used.
+        if self.var2 == None and self.lblVar2 != None:
+            self.var2 = self.lblVar2.text()
+        #var2 = mysql_db.getSecondVar(self, sku_code)
+        if not self.var1:
+            self.var1 = mysql_db.getFirstVar(self, sku_code)
+            inVar1, ok = QInputDialog.getText(self, "Enter "+self.var1, "Please Enter "+self.var1+":")
+            if ok:
+                self.lblVar1.setText(self.var1)
+                self.lblTxtVar1.setText(inVar1)
+                self.orderVars = inVar1
+                var2 = mysql_db.getSecondVar(self, sku_code)
+                if not var2:
+                    self.var2 = None
+                    self.lblVar2.hide()
+                    self.lblTxtVar2.hide()
+                    QApplication.instance().processEvents()               
+                    self.orderVars = self.lblTxtVar1.text()                    
+                else:
+                    inVar2, ok = QInputDialog.getText(self, "Enter "+var2, "Please Enter " +var2+ ":")
+                    if ok:
+                        self.lblVar2.setText(var2)
+                        self.lblTxtVar2.setText(inVar2)
+                        self.var2 = inVar2
+                        self.orderVars = self.orderVars + " :: " + inVar2
+        elif self.var1 and not self.var2:
+            var2 = mysql_db.getSecondVar(self, sku_code)
+            if var2:
+                inVar2, ok = QInputDialog.getText(self, "Enter "+var2, "Please Enter " +var2+ ":")
+                if ok:
+                    self.lblVar2.setText(var2)
+                    self.lblTxtVar2.setText(inVar2)
+                    self.var2 = inVar2
+                    self.orderVars = self.orderVars + " :: " + inVar2
+        elif self.var1 and self.var2:
+            var2 = mysql_db.getSecondVar(self, sku_code)
+            if not var2:
+                self.var2 = None
+                self.lblVar2.hide()
+                self.lblTxtVar2.hide()
+                QApplication.instance().processEvents()               
+                self.orderVars = self.lblTxtVar1.text()
+            else:
+                self.var2 = self.lblTxtVar2.text()
+                self.orderVars = self.var1 + " :: " + self.var2
+                
         
-    def getCustomerName(self):
-        inCustName, ok = QInputDialog.getText(self, "Enter Name", "Please Enter Name:")
-        if ok:
-            CSRWidgets.setCustomerName(self, inCustName)
-    
-    def setCustomerName(self, CustName):
-        self.custName = CustName
-        self.lblCustName.setText(CustName)
-
     def updateNameDesign(self):
         treeName = self.sender()
+        CSRWidgets.getTreeVars(self, treeName)
+        
         if str(treeName.objectName()) == 'garmentTree':
             #If top level (Name) node is selected.
             if treeName.currentItem().parent() == None:
-                self.lblCustName.setText(treeName.currentItem().text(0))
-                self.lblSkuName.setText(treeName.currentItem().child(0).text(0))
-                self.custName = (treeName.currentItem().text(0))
+                var = treeName.currentItem().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.lblTxtVar1.setText(var[0])
+                    self.lblTxtVar2.setText(var[1])
+                else: 
+                    self.lblTxtVar1.setText(var)
+                    self.lblVar2.hide()
+                    self.lblTxtVar2.hide()
+                skuCode = treeName.currentItem().child(0).text(0)
+                self.orderVars = (treeName.currentItem().text(0))
             #Fourth tree node selected (sizes)
             elif treeName.currentItem().child(0) == None:
-                self.lblCustName.setText(treeName.currentItem().parent().parent().parent().text(0)) 
-                self.lblSkuName.setText(treeName.currentItem().parent().parent().text(0))
-                self.custName = (treeName.currentItem().parent().parent().parent().text(0))               
+                var = treeName.currentItem().parent().parent().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.lblTxtVar1.setText(var[0]) 
+                    self.lblTxtVar2.setText(var[1])
+                else:
+                    self.lblTxtVar1.setText(var)
+                    self.lblVar2.hide()
+                    self.lblTxtVar2.hide()                    
+                skuCode = treeName.currentItem().parent().parent().text(0)
+                self.orderVars = (treeName.currentItem().parent().parent().parent().text(0))               
             #Second tree node is selected (Sku)
             elif treeName.currentItem().child(0).child(0) != None and treeName.currentItem().parent() != None:
-                self.lblCustName.setText(treeName.currentItem().parent().text(0))
-                self.lblSkuName.setText(treeName.currentItem().text(0))
-                self.custName = (treeName.currentItem().parent().text(0))
+                var = treeName.currentItem().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.lblTxtVar1.setText(var[0])
+                    self.lblTxtVar2.setText(var[1])
+                else:
+                    self.lblTxtVar1.setText(var)
+                    self.lblVar2.hide()
+                    self.lblTxtVar2.hide                    
+                skuCode = treeName.currentItem().text(0)
+                self.orderVars = (treeName.currentItem().parent().text(0))
             #Third tree node selected (garment, T-Shirts)
             elif treeName.currentItem().child(0) != None and treeName.currentItem().parent().parent() != None:
-                self.lblCustName.setText(treeName.currentItem().parent().parent().text(0))
-                self.lblSkuName.setText(treeName.currentItem().parent().text(0))    
-                self.custName = (treeName.currentItem().parent().parent().text(0))
-                
-        CSRWidgets.loadDesignItem(self, self.lblSkuName.text())         
-        #CSRWidgets.updateOrderDetails(self)        
+                var = treeName.currentItem().parent().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.lblTxtVar1.setText(var[0])
+                    self.lblTxtVar2.setText(var[1])
+                else:
+                    self.lblTxtVar1.setText(var)
+                    self.lblVar2.hide()
+                    self.lblTxtVar2.hide                    
+                skuCode = treeName.currentItem().parent().text(0)    
+                self.orderVars = (treeName.currentItem().parent().parent().text(0))
+        self.lblSkuName.setText(skuCode)
+        CSRWidgets.loadDesignItem(self, skuCode)         
+        #CSRWidgets.updateOrderDetails(self)    
+        
+    def getTreeVars(self, garmTree):
+        treeName = garmTree
+        if str(treeName.objectName()) == 'garmentTree':
+            #If top level (Name) node is selected.
+            if treeName.currentItem().parent() == None:
+                var = treeName.currentItem().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.var1 = var[0]
+                    self.var2 = var[1]
+                else: 
+                    self.var1 = var
+                    self.var2 = None
+            #Fourth tree node selected (sizes)
+            elif treeName.currentItem().child(0) == None:
+                var = treeName.currentItem().parent().parent().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.var1 = var[0] 
+                    self.var2 = var[1]
+                else:
+                    self.var1 = var
+                    self.var2 = None
+            #Second tree node is selected (Sku)
+            elif treeName.currentItem().child(0).child(0) != None and treeName.currentItem().parent() != None:
+                var = treeName.currentItem().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.var1 = var[0]
+                    self.var2 = var[1]
+                else:
+                    self.var1 = var
+                    self.var2 = None
+            #Third tree node selected (garment, T-Shirts)
+            elif treeName.currentItem().child(0) != None and treeName.currentItem().parent().parent() != None:
+                var = treeName.currentItem().parent().parent().text(0)
+                if var.find('::', 0, len(var)) > 0:
+                    var = var.split(' :: ')
+                    self.var1 = var[0]
+                    self.var2 = var[1]
+                else:
+                    self.var1 = var
+                    self.var2 = None
+    
+        return self.var1, self.var2
+    
+    def changeCustName(self):
+        sku_code = self.lblSkuName.text()
+        self.var1 = mysql_db.getFirstVar(self, sku_code)
+        self.var2 = mysql_db.getSecondVar(self, sku_code)
+        
+        inVar1, ok = QInputDialog.getText(self, "Enter "+self.var1, "Please enter "+self.var1+":")
+        if ok and inVar1:
+            self.orderVars = inVar1
+            self.lblTxtVar1.setText(inVar1)
+            
+            if self.var2:
+                inVar2, ok = QInputDialog.getText(self, "Enter "+self.var2, "Please enter "+self.var2+":")
+                if ok and inVar2:
+                    self.orderVars = self.orderVars +" :: "+ inVar2
+                    self.lblTxtVar2.setText(inVar2)

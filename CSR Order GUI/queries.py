@@ -53,12 +53,6 @@ class mysql_db():
         return sd.fetchall()
 
 
-
-
-
-
-
-
     def garmentInfo(self, sku_code, garment_type):
         gi = mysql_db.mysql_connect(self)
         gi.execute("""
@@ -74,6 +68,25 @@ class mysql_db():
         ORDER BY it.inventories_types_order,inv.inventories_code, ia.inventories_accessories_order, io.inventories_options_order
         """)
         return gi.fetchall() 
+    
+    def getSecondVar(self, sku_code):
+        if sku_code:
+            db = mysql_db.mysql_connect(self)
+            db.execute("SELECT var_2_text FROM designs WHERE sku_code = '"+sku_code+"'")
+            ds = db.fetchone()
+            
+            sv = ds[0]
+    
+            return sv
+    
+    def getFirstVar(self, sku_code):
+        db = mysql_db.mysql_connect(self)
+        db.execute("SELECT var_1_text FROM designs WHERE sku_code = '"+sku_code+"'")
+        ds = db.fetchone()
+        
+        fv = ds[0]
+        
+        return fv
 
     
 
