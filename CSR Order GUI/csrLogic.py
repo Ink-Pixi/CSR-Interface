@@ -387,6 +387,7 @@ class CSRWidgets(QWidget):
                                 garmName.setBackground(2, QColor(230,230,230,127))
                                 garmName.setBackground(3, QColor(230,230,230,127))
                                 garmName.setBackground(4, QColor(230,230,230,127)) 
+                                
                                 removeGarment = QToolButton(self)
                                 removeGarment.setIcon(QIcon("icon/close-widget.png"))
                                 removeGarment.setIconSize(QSize(14, 14))
@@ -453,6 +454,12 @@ class CSRWidgets(QWidget):
                 garmName.setBackground(3, QColor(230,230,230,127))
                 garmName.setBackground(4, QColor(230,230,230,127))
                 
+                removeName = QToolButton(self)
+                removeName.setIcon(QIcon("Icon/close-widget.png"))
+                removeName.setIconSize(QSize(14,14))
+                removeName.setAutoRaise(True)
+                removeName.clicked.connect(lambda: CSRWidgets.remove_widget(self))                
+                
                 removeSku = QToolButton(self)
                 removeSku.setIcon(QIcon("icon/close-widget.png"))
                 removeSku.setIconSize(QSize(14, 14))
@@ -469,6 +476,7 @@ class CSRWidgets(QWidget):
                 CSRWidgets.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
                 CSRWidgets.lblTotal[str(sku_code + garment_name)].setFont(QFont("Helvetica",10,QFont.Bold))
                 
+                self.garmentTree.setItemWidget(nm, 4, removeName)
                 self.garmentTree.setItemWidget(sku, 4, removeSku)
                 self.garmentTree.setItemWidget(garmName, 4, removeGarment)              
                 self.garmentTree.setItemWidget(garmName, 3, CSRWidgets.lblTotal[str(sku_code + garment_name)])
@@ -602,10 +610,10 @@ class CSRWidgets(QWidget):
             self.var2 = self.lblVar2.text()
         #var2 = mysql_db.getSecondVar(self, sku_code)
         if not self.var1:
-            self.var1 = mysql_db.getFirstVar(self, sku_code)
-            inVar1, ok = QInputDialog.getText(self, "Enter "+self.var1, "Please Enter "+self.var1+":")
+            var1 = mysql_db.getFirstVar(self, sku_code)
+            inVar1, ok = QInputDialog.getText(self, "Enter "+var1, "Please Enter "+var1+":")
             if ok:
-                self.lblVar1.setText(self.var1)
+                self.lblVar1.setText(var1)
                 self.lblTxtVar1.setText(inVar1)
                 self.orderVars = inVar1
                 var2 = mysql_db.getSecondVar(self, sku_code)
@@ -632,17 +640,42 @@ class CSRWidgets(QWidget):
                     self.var2 = inVar2
                     self.orderVars = self.orderVars + " :: " + inVar2
         elif self.var1 and self.var2:
+            var1 = mysql_db.getFirstVar(self, sku_code)
             var2 = mysql_db.getSecondVar(self, sku_code)
             if not var2:
                 self.var2 = None
                 self.lblVar2.hide()
                 self.lblTxtVar2.hide()
-                QApplication.instance().processEvents()               
-                self.orderVars = self.lblTxtVar1.text()
+                QApplication.instance().processEvents()
+                if self.lblVar1.text() == var1:               
+                    self.orderVars = self.lblTxtVar1.text()
+                else:
+                    inVar1, ok = QInputDialog.getText(self, "Enter "+var1+":", "Please Enter "+var1+":")
+                    if ok and inVar1:
+                        self.lblVar1.setText(var1)
+                        self.lblTxtVar1.setText(inVar1)
+                        self.orderVars = inVar1
             else:
-                self.var2 = self.lblTxtVar2.text()
-                self.var1 = self.lblTxtVar1.text()
-                self.orderVars = self.var1 + " :: " + self.var2
+                if self.lblVar1.text() == var1:               
+                    self.orderVars = self.lblTxtVar1.text()
+                else:
+                    inVar1, ok = QInputDialog.getText(self, "Enter "+var1+":", "Please Enter "+var1+":")
+                    if ok and inVar1:
+                        self.lblVar1.setText(var1)
+                        self.lblTxtVar1.setText(inVar1)
+                        self.orderVars = inVar1
+                if self.lblVar2.text() == var2:
+                    self.orderVars = self.orderVars + " :: " + self.lblTxtVar2.text()
+                else:
+                    inVar2, ok = QInputDialog.getText(self, "Enter "+var2+":", "Please Enter "+var2+":")
+                    if ok and inVar2:
+                        self.lblVar2.setText(var2)
+                        self.lblTxtVar2.setText(inVar2)
+                        self.orderVars = self.orderVars + " :: " + inVar2
+                                        
+                #self.var2 = self.lblTxtVar2.text()
+                #self.var1 = self.lblTxtVar1.text()
+                #self.orderVars = self.var1 + " :: " + self.var2
                 
         
     def updateNameDesign(self):
@@ -761,9 +794,11 @@ class CSRWidgets(QWidget):
         if ok and inVar1:
             self.orderVars = inVar1
             self.lblTxtVar1.setText(inVar1)
+            self.lblVar1.setText(self.var1)
             
             if self.var2:
                 inVar2, ok = QInputDialog.getText(self, "Enter "+self.var2, "Please enter "+self.var2+":")
                 if ok and inVar2:
                     self.orderVars = self.orderVars +" :: "+ inVar2
                     self.lblTxtVar2.setText(inVar2)
+                    self.lblVar2.setText(self.var2)
