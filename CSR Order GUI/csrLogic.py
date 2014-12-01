@@ -518,7 +518,7 @@ class CSRWidgets(QWidget):
         CSRWidgets.updateOrderDetails(self)
         
     def sumQuantity(self, column):
-
+        print(self.text(column), column, self)
         if self.text(column) and self.childCount() == 0 and self.parent() != None:
             #If this row has no Quantity yet, set it to zero.
             if self.text(3) == "":
