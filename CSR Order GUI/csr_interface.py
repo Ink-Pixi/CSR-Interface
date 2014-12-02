@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import Qt, QSize, QRect
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
                              QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
                              QDialog, QTextEdit, QRadioButton)
@@ -729,7 +729,7 @@ class GarmentTree(QTreeWidget):
         selItems = self.garmentTree.selectedItems()
         
         ets = EditTreeSku()
-        ets.editTreeSku(selItems)
+        ets.getAlternateSkus(selItems)
         ets.show()
         mainWin.setEnabled(False)
                 
@@ -766,6 +766,7 @@ class GarmentTree(QTreeWidget):
                         self.orderVars = newName + ' :: ' + inVar2
                         #reset the name in the tree.
                         item.setText(0, self.orderVars)
+        self.updateOrderDetails()
 
     def remove_widget(self):
         btn = self.sender()
@@ -987,6 +988,7 @@ class GarmentTree(QTreeWidget):
                     self.orderVars = self.orderVars +" :: "+ inVar2
                     mainWin.lblTxtVar2.setText(inVar2)
                     mainWin.lblVar2.setText(self.var2)
+                    
 
     def getCustomerName(self, sku_code = None):
         #Grabs the last var2 that was used.
@@ -1063,13 +1065,10 @@ class EditTreeSku(QDialog):
         
         self.createHeader()
         
-#         self.printOut = QTextEdit()
-#         self.printOut.setFont(QFont("Helvetica", 11, QFont.Bold))
-#         self.printOut.setReadOnly(True)
+        self.gt = GarmentTree()
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addLayout(self.createHeader())
-#        self.mainLayout.addWidget(self.printOut)
         
         self.setLayout(self.mainLayout)
         
@@ -1080,11 +1079,11 @@ class EditTreeSku(QDialog):
         #self.setWindoIcon('don\'t have one yet.')
 
         pos = mainWin.pos()
-
+ 
         x = pos.x() - ((self.width()/2) - (mainWin.width()/2)) 
         y = pos.y() - ((self.height()/2) - (mainWin.height()/2)) 
         
-        self.setGeometry(x,y, 350, 500)        
+        #self.setGeometry(x,y, 350, 500)        
         
     def createHeader(self):
         wht = QPalette()
@@ -1109,30 +1108,38 @@ class EditTreeSku(QDialog):
         
         return hbHeader
         
-    def editTreeSku(self, selItems):
+    def getAlternateSkus(self, selItems):
         
         lsTree = []
         for item in selItems:
             #Get sku from tree to use when deleting
-            sku = item.text(0)
-            print(sku)
+            selSku = item.text(0)
             #Get the variables from the tree for use later on.
             treeVars = item.parent().text(0)
-            print(treeVars)
+            self.gt.orderVars = treeVars
             
+            lsGarmName = []
+            lsGarmQty = []
             for i in range(item.childCount()):
+                lsGarmName.append(item.child(i).text(0))
                 for j in range(item.child(i).childCount()):
                     if item.child(i).child(j).text(3) != "":
                         lsTree.append(item.child(i).child(j).text(0) + " " + item.child(i).child(j).text(1))
+                        lsGarmQty.append([item.child(i).child(j).text(0) + " " + item.child(i).child(j).text(1), item.child(i).child(j).text(3)]) 
 
-        aSkus = mysql_db.get_assoc_skus(self, sku)
+        aSkus = mysql_db.get_assoc_skus(self, selSku)
         skus = aSkus.split(":")
         
+        layout = QGridLayout()
         rbSkus = {}
+        hbSkus = {}
+        i = 0
+        j = 0
         for sku in skus:
             if sku != item.text(0):
 
                 rbSkus = QRadioButton(sku)
+                rbSkus.toggled.connect(self.setSku)
                 rbSkus.setFont(QFont("Times", 10, QFont.Bold))
 
                 img = mysql_db.get_tshirt_image(self, sku)
@@ -1147,9 +1154,11 @@ class EditTreeSku(QDialog):
                 teNotAvail.setReadOnly(True)
                 teNotAvail.setMaximumWidth(250)
                 
-                hbSkus = QHBoxLayout()
+                hbSkus[sku] = QHBoxLayout()
+                hbSkus[sku].setObjectName(sku)
 
                 vbImg = QVBoxLayout()
+                vbImg.setObjectName("img")
                 vbImg.addWidget(QLabel())
                 vbImg.addWidget(pix)
                 vbImg.addWidget(rbSkus)
@@ -1159,27 +1168,104 @@ class EditTreeSku(QDialog):
                 lblNotAvail.setFont(QFont("Times", 10, QFont.Bold))
                 
                 vbNotAvail = QVBoxLayout()
+                vbNotAvail.setObjectName('not avail')
                 vbNotAvail.addWidget(lblNotAvail)
                 vbNotAvail.addWidget(teNotAvail)
                 vbNotAvail.addStretch(1)                
+
+                vline = QFrame()
+                vline.setFrameShape(QFrame.VLine)
+                vline.setFrameShadow(QFrame.Sunken)
+                                
+                hbSkus[sku].addLayout(vbImg)
+                hbSkus[sku].addLayout(vbNotAvail)
+                hbSkus[sku].addWidget(vline)
                 
-                hbSkus.addLayout(vbImg)
-                hbSkus.addLayout(vbNotAvail)
-                
-                line = QFrame()
+                hline = QFrame()
                 #line.setGeometry(QRect(320, 150, 118, 3))
-                line.setFrameShape(QFrame.HLine)
-                line.setFrameShadow(QFrame.Sunken)
+                hline.setFrameShape(QFrame.HLine)
+                hline.setFrameShadow(QFrame.Sunken)
                 
-                self.mainLayout.addWidget(line)                
-                self.mainLayout.addLayout(hbSkus)
+                vbSkus = QVBoxLayout()
+                vbSkus.setObjectName('vb sku')
+                vbSkus.addWidget(hline)
+                vbSkus.addLayout(hbSkus[sku])
+                
+                layout.addLayout(vbSkus, j, i)
+                layout.setObjectName('layout')
                 
                 availSkus = mysql_db.get_garments_sizes(self, sku)
                 for row in lsTree:
                     if row not in availSkus:
                         teNotAvail.insertPlainText("   " + row + "\n")
+                
+                if j == 3:
+                    i += 1
+                    j = 0
+                else:
+                    j += 1
+        
+        self.mainLayout.addLayout(layout)
+                
+        btnLayout = QHBoxLayout()
+        
+        btnChangeSku = QPushButton('Change SKU')
+        btnChangeSku.clicked.connect(lambda: self.changeSku(lsGarmName, lsGarmQty))
+        btnChangeSku.clicked.connect(lambda: self.removeOldSku(selItems))
+        btnLayout.addWidget(btnChangeSku)
+        
+        btnCancel = QPushButton('Cancel')
+        btnCancel.clicked.connect(self.reject)
+        btnCancel.clicked.connect(lambda: mainWin.setEnabled(True))
+        btnLayout.addWidget(btnCancel)
+        
+        self.mainLayout.addLayout(btnLayout)
 
-                        
+    def setSku(self):
+        rbSku = self.sender()
+        self.newSku = rbSku.text()
+
+    def changeSku(self, garmName, garmQtys):
+        #garmName = list of garment names that were loaded for the sku that is being changed.
+        #garmQtys = list of lists of the qtys that were attached to each individual garments.
+        
+        for name in garmName: 
+            #grabs the id for the garment name (i.e. T-Shirt)
+            garmID = mysql_db.get_garment_type_id(self, name)
+            #loads the tree garments for the new sku, based on what was in the tree
+            mainWin.gt.loadGarmentInfo(self.newSku, str(garmID), name)
+        #this will refresh the design buttons on the top so the sku's match up.
+        mainWin.loadDesignItem(self.newSku)
+        
+        #Update new sku with the order quantities of the old sku
+        itChange = QTreeWidgetItemIterator(mainWin.gt.garmentTree)
+        #First open yet another iterator.
+        while itChange.value():        
+            #if the variables and the sku match...keep going.
+            if itChange.value().text(0) == self.newSku and itChange.value().parent().text(0) == self.gt.orderVars:
+                tot = 0
+                for j in range(itChange.value().childCount()):
+                    item = itChange.value().child(j)
+                    for k in range(item.childCount()):
+                        for i in range(len(garmQtys)):
+                            if item.child(k).text(0) + " " + item.child(k).text(1) == garmQtys[i][0]:
+                                item.child(k).setText(3, garmQtys[i][1]) 
+                                if int(garmQtys[i][1]) > 0:
+                                    tot += int(garmQtys[i][1])
+                                    print(tot)
+                                    item.setText(3, str(tot))
+                    tot = 0
+            itChange += 1
+        #this will update the table with the new sku and proper values from the old sku.
+        self.close()
+        mainWin.setEnabled(True)
+            
+    def removeOldSku(self, selItems):
+        root = mainWin.gt.garmentTree.invisibleRootItem()
+        for item in selItems:
+            (item.parent() or root).removeChild(item)
+        mainWin.gt.updateOrderDetails()
+                                                    
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.leftClick = True
@@ -1317,6 +1403,12 @@ class mysql_db():
             lst.append(row[0])
         
         return lst
+    
+    def get_garment_type_id(self, garmType):
+        db = mysql_db.mysql_connect(self)
+        db.execute("SELECT inventories_types_id FROM inventories_types WHERE inventories_types_name = '"+ garmType +"'")
+        ds = db.fetchone()
+        return ds[0]
 
 class mssql_db():
     def mssql_connect(self):
