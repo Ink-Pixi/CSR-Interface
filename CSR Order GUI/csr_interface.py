@@ -2,10 +2,11 @@ import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
                              QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
-                             QDialog, QTextEdit, QRadioButton)
-from PyQt5.QtGui import QFont, QIcon, QKeySequence, QPixmap, QColor, QPalette
+                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox)
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPalette
 import mysql.connector
 import pyodbc
+from PyQt5.Qt import QTextCursor
 
 class MainWindow(QMainWindow):
     
@@ -49,55 +50,65 @@ class MainWindow(QMainWindow):
         self.helpMenu.addAction(self.aboutAct)
 
     def createToolbars(self):
-        self.homeToolBar = self.addToolBar("Home")
-        self.homeToolBar.addAction(self.homeAct)
-        self.homeToolBar.addAction(self.quitAct)
+        #self.homeToolBar = self.addToolBar("Home")
 
-        self.searchToolBar = self.addToolBar("Search")
-        self.searchToolBar.addAction(self.searchAct)
         
+        self.searchToolBar = self.addToolBar("Search")
+        
+        self.searchToolBar.addAction(self.homeAct)
+        self.searchToolBar.addSeparator()
+                
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(150)
+        self.searchBar.setPlaceholderText('Search for design')
         self.searchBar.returnPressed.connect(self.btnSearch_Click)
         self.searchToolBar.addWidget(self.searchBar)
         
-        self.searchToolBar.addSeparator()
-        self.searchToolBar.addAction(self.undoAct)
+        self.searchToolBar.addAction(self.searchAct)   
         
         self.searchToolBar.addSeparator()
         
-        btnNameChange = QPushButton('Add Name', self)
-        btnNameChange.clicked.connect(self.btnNameChange_Click)
+        btnAddVars = QPushButton('Add Name', self)
+        btnAddVars.clicked.connect(self.btnAddVars_Click)
+        self.searchToolBar.addWidget(btnAddVars)
+        
+        self.searchToolBar.addSeparator()
         
         self.lblVar1 = QLabel()
         self.lblVar1.setFont(QFont('Veranda', 14, QFont.Bold))
         #self.lblVar1.setMargin(10)
         self.lblVar1.setStyleSheet('padding-left:10px')
+        self.searchToolBar.addWidget(self.lblVar1)
         
         self.lblTxtVar1 = QLabel()
         self.lblTxtVar1.setFont(QFont('Veranda', 14, QFont.Bold))
         #self.lblTxtVar1.setMargin(0)
         self.lblTxtVar1.setStyleSheet('padding-left:1px')
+        self.searchToolBar.addWidget(self.lblTxtVar1)
         
         self.lblVar2 = QLabel()
         self.lblVar2.setFont(QFont('Veranda', 14, QFont.Bold))
         self.lblVar2.setMargin(10)  
+        self.searchToolBar.addWidget(self.lblVar2)
         
         self.lblTxtVar2 = QLabel()
         self.lblTxtVar2.setFont(QFont('Veranda', 14, QFont.Bold))
         self.lblTxtVar2.setMargin(0)              
+        self.searchToolBar.addWidget(self.lblTxtVar2)
         
         self.lblSkuName = QLabel()
         self.lblSkuName.setFont(QFont('Veranda', 14, QFont.Bold))
         self.lblSkuName.setMargin(10)
-        
-        self.searchToolBar.addWidget(btnNameChange)
-        self.searchToolBar.addWidget(self.lblVar1)
-        self.searchToolBar.addWidget(self.lblTxtVar1)
-        self.searchToolBar.addWidget(self.lblVar2)
-        self.searchToolBar.addWidget(self.lblTxtVar2)
         self.searchToolBar.addWidget(self.lblSkuName)
-
+        
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.searchToolBar.addWidget(spacer)
+        
+        self.searchToolBar.addSeparator()
+        self.searchToolBar.addAction(self.quitAct)
+        
+        
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
 
@@ -133,8 +144,8 @@ class MainWindow(QMainWindow):
         sku_code = str(btnName.objectName())
         self.loadDesignItem(sku_code)
         
-    def btnNameChange_Click(self):
-        self.gt.changeCustName()
+    def btnAddVars_Click(self):
+        self.gt.addVariables()
         
     def btnHome_Click(self):
         self.changeCentralWidget(self.createDesignButtons('default'))
@@ -152,9 +163,6 @@ class MainWindow(QMainWindow):
         #self.orderItem.clear()
         searchTerm = self.searchBar.text()
         self.changeCentralWidget(self.createDesignButtons(searchTerm))
-
-    def btnUndo_Click(self):
-        self.undo()
 
     def itemClicked_Click(self):
         button = self.sender()
@@ -210,15 +218,13 @@ class MainWindow(QMainWindow):
                                  triggered=self.btnSearch_Click)
         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
                                triggered=self.btnHome_Click)
-        self.undoAct = QAction(QIcon('icon/undo.png'), '&Undo', self, shortcut=QKeySequence.Undo, 
-                               statusTip="This will undo actions added to order", triggered=self.btnUndo_Click)
         
     def loadDesignItem(self, sku_code):
         self.lblSkuName.setText(sku_code)
         des = mysql_db.design_info(self, sku_code)
         
-        #self.vBox = QVBoxLayout()
-        self.winGrid = QGridLayout()
+        self.vbMain = QVBoxLayout()
+        #self.winGrid = QGridLayout()
         
         if not des:
             lblOpps = QLabel("""We could put a .png or something here, something better than text, to let the CSR's know that 
@@ -265,43 +271,108 @@ class MainWindow(QMainWindow):
         hFrame.setMaximumHeight(200)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
         
-        #Create table to hold and display details of order order as they are selected from the tree. 
-        self.tblOrderDetails = QTableWidget(7, 0)
-        self.tblOrderDetails.hide()
-        #self.tblOrderDetails.setMaximumHeight(250)
-
+        self.tblOrderDetails = self.createOrderTable()
+        self.totBox = self.totalBox()
         
-        self.winGrid.addWidget(hFrame, 0, 0, 2, 2)
-        #self.vBox.addWidget(hFrame)
-        #self.vBox.addWidget(self.tblOrderDetails)
-        self.winGrid.addWidget(self.tblOrderDetails, 2, 0, 1, 1)
-        #self.winGrid.addWidget(self.totalBox, 2, 1, 1, 1)       
-        #self.vBox.addStretch(1)
+        self.vbMain.addWidget(hFrame)
+        self.vbMain.addWidget(self.tblOrderDetails)
+        self.vbMain.addLayout(self.totBox)
+       
+        self.vbMain.addStretch(1)
 
-        self.changeCentralWidget(self.winGrid)
+        self.changeCentralWidget(self.vbMain)
         
-        self.gt.updateOrderDetails()
+        self.updateOrderDetails()
         self.gt.getCustomerName(sku_code)      
         
-    def totalBox(self):
-        lblTest = QLabel("test")
-        lblSomething = QLabel("something else")
+    def createOrderTable(self):
+        #Create table to hold and display details of order order as they are selected from the tree. 
+        tblOrderDetails = QTableWidget(7, 0)
+        # Build the table to hold the information from the tree.
+        tblOrderDetails.setMinimumHeight(500)
+        #tblOrderDetails.setMaximumWidth(500)             
+        tblOrderDetails.setColumnCount(7)
+        tblOrderDetails.setAlternatingRowColors(True)
+        head = tblOrderDetails.horizontalHeader()
+        head.setStretchLastSection(True)           
+
+        lstHeader = ["Variables", "Design", "Category", "Type", "Size", "Price", "Qty" ]     
+        tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
+        tblOrderDetails.setWordWrap(False)        
         
-        totBox = QVBoxLayout()
-        totBox.addWidget(lblTest)
-        totBox.addWidget(lblSomething)
+        return tblOrderDetails        
+        
+    def updateOrderDetails(self):
+        # If there is already a garment tree we want to clear out the old lists we do this to catch in an error
+        # in case this function get's called before there is a tree build or grown, ha ha.
+        od = self.tblOrderDetails
+        if self.gt.garmentTree:
+            lstItems = []
+            totPcs = 0
+            totPri = 0
+            # Open a iterator to iterate through the tree (again) and build a list of lists of items in the tree to be added to the table.
+            itOrders = QTreeWidgetItemIterator(self.gt.garmentTree)
+            while itOrders.value():
+                if itOrders.value() != None:
+                    # Below makes sure that there are values for both the price and the quantity.
+                    if itOrders.value().text(3) != "" and itOrders.value().text(2) != "":
+                        # This makes sure that we are at the correct level in the tree so we do try to add what shouldn't be added
+                        if itOrders.value().parent().parent().parent() != None:
+                            txtItems = []
+                            txtItems = [itOrders.value().parent().parent().parent().text(0), itOrders.value().parent().parent().text(0), 
+                                        itOrders.value().parent().text(0), itOrders.value().text(0), itOrders.value().text(1), 
+                                        str(format(float(itOrders.value().text(2)) * float(itOrders.value().text(3)), '.2f')), 
+                                        itOrders.value().text(3)]
+                                        
+                            lstItems.append(txtItems)
+                            totPcs += int(itOrders.value().text(3))
+                            totPri += float(itOrders.value().text(2)) * float(itOrders.value().text(3))
+                itOrders += 1
+            # A check to make sure the iterator picked up items from the list.
+            if len(lstItems) > 0:
+                od.setRowCount(len(lstItems))
+                # Another check to make sure the list is there and has data, then we go through it and add data to the table.
+                if lstItems:
+                    for i, row in enumerate(lstItems):
+                        for j, col in enumerate(row):
+                            item = QTableWidgetItem(col)
+                            item.setFlags(Qt.ItemIsEditable)
+                            od.setItem(i, j, item)      
+                    
+                    od.resizeColumnsToContents()  
+                    #below will resize the table based on the contents of the length of the data in the rows and columns.
+                    tblWidth = od.columnWidth(0) + od.columnWidth(1) + od.columnWidth(2) + od.columnWidth(3) + od.columnWidth(4) + od.columnWidth(5) + od.columnWidth(6) + od.columnWidth(7) + 15
+                    #for the double digit numbering on left of the table.
+                    if len(lstItems) > 9:
+                        tblWidth = tblWidth + 10
+                    #for the scroll bar when table hits its max height.
+                    if len(lstItems) > 15:
+                        tblWidth = tblWidth + 10 
+
+                    od.setMaximumWidth(tblWidth)
+                    od.setMinimumWidth(tblWidth)
+                    od.show() 
+                    self.lblTotPcs.setText("Total Pieces: " + str(totPcs))
+                    self.lblTotPri.setText("Total Price: $" + format(totPri, '.2f'))
+                    
+            else:
+                od.hide()        
+                self.lblTotPcs.hide()
+                self.lblTotPri.hide()
+        
+    def totalBox(self):
+        self.lblTotPcs = QLabel()
+        self.lblTotPcs.setFont(QFont("Helvetica",16,QFont.Bold))
+        self.lblTotPri = QLabel()
+        self.lblTotPri.setFont(QFont("Helvetica",16,QFont.Bold))
+        
+        totBox = QHBoxLayout()
+        totBox.addWidget(self.lblTotPcs)
+        totBox.addWidget(self.lblTotPri)
         totBox.addStretch()
         
-        tFrame = QFrame()
-        tFrame.setLayout(totBox)
-        tFrame.setMinimumWidth(350)
-        
-        return tFrame
-               
-    def undo(self):
-        print("this will \"undo\" items added to the order.")
-        self.searchBar.clear()
-  
+        return totBox
+    
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
         self.mainWidget.setLayout(widgetLayout)
@@ -359,6 +430,7 @@ class GarmentTree(QTreeWidget):
             self.lblTotal = {}
             nm = QTreeWidgetItem(self.garmentTree)
             nm.setText(0, self.orderVars)
+            nm.setToolTip(0, self.orderVars)
             nm.setBackground(0, QColor(180,180,180,127))
             nm.setBackground(1, QColor(180,180,180,127))
             nm.setBackground(2, QColor(180,180,180,127))
@@ -394,19 +466,19 @@ class GarmentTree(QTreeWidget):
             removeName.setIcon(QIcon("Icon/close-widget.png"))
             removeName.setIconSize(QSize(14,14))
             removeName.setAutoRaise(True)
-            removeName.clicked.connect(self.remove_widget)
+            removeName.clicked.connect(self.removeTreeItem)
             
             removeSku = QToolButton(self)
             removeSku.setIcon(QIcon("icon/close-widget.png"))
             removeSku.setIconSize(QSize(14, 14))
             removeSku.setAutoRaise(True)
-            removeSku.clicked.connect(self.remove_widget)
+            removeSku.clicked.connect(self.removeTreeItem)
             
             removeGarment = QToolButton(self)
             removeGarment.setIcon(QIcon("icon/close-widget.png"))
             removeGarment.setIconSize(QSize(14, 14))
             removeGarment.setAutoRaise(True)
-            removeGarment.clicked.connect(self.remove_widget)
+            removeGarment.clicked.connect(self.removeTreeItem)
             
             editName = QToolButton(self)
             editName.setIcon(QIcon("icon/undo.png"))
@@ -516,7 +588,7 @@ class GarmentTree(QTreeWidget):
                                 removeGarment.setIcon(QIcon("icon/close-widget.png"))
                                 removeGarment.setIconSize(QSize(14, 14))
                                 removeGarment.setAutoRaise(True)
-                                removeGarment.clicked.connect(self.remove_widget)
+                                removeGarment.clicked.connect(self.removeTreeItem)
                                 
                                 self.lblTotal[str(sku_code + garment_name)] = QLabel(self.garmentTree)
                                 self.lblTotal[str(sku_code + garment_name)].setMaximumWidth(30)
@@ -579,13 +651,13 @@ class GarmentTree(QTreeWidget):
                                 removeSku.setIcon(QIcon("icon/close-widget.png"))
                                 removeSku.setIconSize(QSize(14, 14))
                                 removeSku.setAutoRaise(True)
-                                removeSku.clicked.connect(self.remove_widget)
+                                removeSku.clicked.connect(self.removeTreeItem)
                                 
                                 removeGarment = QToolButton(self)
                                 removeGarment.setIcon(QIcon("icon/close-widget.png"))
                                 removeGarment.setIconSize(QSize(14, 14))
                                 removeGarment.setAutoRaise(True)
-                                removeGarment.clicked.connect(self.remove_widget)
+                                removeGarment.clicked.connect(self.removeTreeItem)
                                 
                                 editSku = QToolButton(self)
                                 editSku.setIcon(QIcon("icon/undo.png"))
@@ -625,6 +697,7 @@ class GarmentTree(QTreeWidget):
                 self.lblTotal = {}
                 nm = QTreeWidgetItem(self.garmentTree)
                 nm.setText(0, self.orderVars)
+                nm.setToolTip(0, self.orderVars)
                 nm.setBackground(0, QColor(180,180,180,127))
                 nm.setBackground(1, QColor(180,180,180,127))
                 nm.setBackground(2, QColor(180,180,180,127))
@@ -661,19 +734,19 @@ class GarmentTree(QTreeWidget):
                 removeName.setIcon(QIcon("Icon/close-widget.png"))
                 removeName.setIconSize(QSize(14,14))
                 removeName.setAutoRaise(True)
-                removeName.clicked.connect(self.remove_widget)                
+                removeName.clicked.connect(self.removeTreeItem)                
                 
                 removeSku = QToolButton(self)
                 removeSku.setIcon(QIcon("icon/close-widget.png"))
                 removeSku.setIconSize(QSize(14, 14))
                 removeSku.setAutoRaise(True)
-                removeSku.clicked.connect(self.remove_widget)
+                removeSku.clicked.connect(self.removeTreeItem)
                 
                 removeGarment = QToolButton(self)
                 removeGarment.setIcon(QIcon("icon/close-widget.png"))
                 removeGarment.setIconSize(QSize(14, 14))
                 removeGarment.setAutoRaise(True)
-                removeGarment.clicked.connect(self.remove_widget)
+                removeGarment.clicked.connect(self.removeTreeItem)
                 
                 editName = QToolButton(self)
                 editName.setIcon(QIcon("icon/undo.png"))
@@ -734,7 +807,7 @@ class GarmentTree(QTreeWidget):
         mainWin.setEnabled(False)
                 
     def editTreeName(self):
-        #If a customer wants to change is name during ordering.
+        #If a customer wants to change the name or place during ordering.
         
         #Grabs the item that was clicked in the tree and set focus to it to be double sure we get the correct values
         btn = self.sender()
@@ -766,18 +839,117 @@ class GarmentTree(QTreeWidget):
                         self.orderVars = newName + ' :: ' + inVar2
                         #reset the name in the tree.
                         item.setText(0, self.orderVars)
-        self.updateOrderDetails()
+        mainWin.updateOrderDetails()
 
-    def remove_widget(self):
+    def removeTreeItem(self):
+        #This is for removing items as cleaning and efficiently as possible for the CSR's.
         btn = self.sender()
         btn.setFocus()
         root = self.garmentTree.invisibleRootItem()
-       
+
         for item in self.garmentTree.selectedItems():
-            (item.parent() or root).removeChild(item)        
-            
-        self.updateOrderDetails()
+            #if the item has a parent keep moving.
+            if item.parent():
+                #sku level, if the item's parent does not have a parent
+                if not item.parent().parent():
+                    itemParent = item.parent()
+                    #if the item being deleted is the only child left to the parent then we want to remove the parent as well.
+                    if itemParent.childCount() == 1:
+                        (item.parent() or root).removeChild(item)
+                        (item.parent() or root).removeChild(itemParent)
+                    #if there are other children with the item that is being deleted we only want to delete the item.
+                    else:
+                        (item.parent() or root).removeChild(item)
+                #if the items parent has a parent then we are dealing with garment styles (ie. T-shirts)
+                else:
+                    itemParent = item.parent()
+                    if itemParent.childCount() == 1:
+                        if itemParent.parent().childCount() == 1:
+                            (itemParent.parent().parent() or root).removeChild(itemParent.parent())
+                        else:
+                            (item.parent() or root).removeChild(item)
+                            (itemParent.parent() or root).removeChild(itemParent)
+                    else:
+                        (item.parent() or root).removeChild(item)
+            #get rid of everything.            
+            else:
+                (item.parent() or root).removeChild(item)
         
+        #mainWin.updateOrderDetails()
+        self.updateRemovedVars()
+    
+    def updateRemovedVars(self):
+        #This is for updating the tree variables the best possible way so that the CSR's can keep moving.
+        #Open another iterator.
+        itVars = QTreeWidgetItemIterator(mainWin.gt.garmentTree)
+        #variable to hold the new variables if needed.
+        oldVars = None  
+        treeVars = None
+        skuCode = None
+        if mainWin.gt.garmentTree:
+            while itVars.value():
+                #if the orderVars of the last edited item are still in the tree we want to keep those..
+                if itVars.value().text(0) == self.orderVars:
+                    oldVars = itVars.value().text(0)
+                    #next we want to get the sku value of the item that was selected.
+                    skuCode = itVars.value().child(itVars.value().childCount() - 1).text(0)
+                    for item in self.garmentTree.selectedItems():
+                        if item:
+                            #order variable level
+                            if not item.parent():
+                                skuCode = item.child(0).text(0)
+                            #sku level
+                            elif not item.parent().parent():
+                                skuCode = item.text(0)
+                            #garment level
+                            else:
+                                skuCode = item.parent().text(0)
+                #if the orderVars are not in the tree anymore we need new ones.
+                if itVars.value().text(0) != self.orderVars:
+                    #grabs parents as we are iterating through
+                    parent = itVars.value().parent()
+                    #if the parent does not have a parent then we have our order variables  
+                    if not parent:
+                        # this will hold the last item needed for the order variables
+                        treeVars = itVars.value().text(0)
+                        skuCode = itVars.value().child(itVars.value().childCount() - 1).text(0)
+                itVars += 1
+
+            #if the variables haven't been assigned yet, it means they aren't in the tree
+            if oldVars:
+                self.orderVars = oldVars
+            elif treeVars:
+                self.orderVars = treeVars
+            
+            if self.orderVars:
+                if self.orderVars.find('::', 0, len(self.orderVars)) > 0:
+                    #split them up in case there are more than one so we can set the labels.
+                    varis = self.orderVars.split(' :: ')
+                    #set our labels
+                    mainWin.lblTxtVar1.setText(varis[0])
+                    mainWin.lblTxtVar2.setText(varis[1])
+                    #get the second variable type for the variables(ie place, name, etc...)
+                    self.var2 = mysql_db.get_second_var(self, skuCode)
+                    #set the text label for the second variable
+                    mainWin.lblVar2.setText(self.var2)
+                else:
+                    #otherwise we can just set the variable.
+                    mainWin.lblTxtVar1.setText(self.orderVars)
+                    mainWin.lblTxtVar2.setText(None)
+                    mainWin.lblVar2.setText(None)
+
+            if skuCode:
+                #get the variable type for the first variable(ie place, name, etc...)
+                self.var1 = mysql_db.get_first_var(self, skuCode)
+                #set the text label for the second variable
+                mainWin.lblVar1.setText(self.var1)
+                #set the sku label
+                mainWin.lblSkuName.setText(skuCode)             
+                #load that design
+                mainWin.loadDesignItem(skuCode)    
+        else:
+            print('nothing left homes.')
+            
     def sumQuantity(self, item, column):
         if item.text(column) and item.childCount() == 0 and item.parent() != None:
             #If this row has no Quantity yet, set it to zero.
@@ -816,58 +988,9 @@ class GarmentTree(QTreeWidget):
             item.parent().setText(3,newSum)
             item.setText(3,newNum)
                       
-    def updateOrderDetails(self):
-        # If there is already a garment tree we want to clear out the old lists we do this to catch in an error
-        # in case this function get's called before there is a tree build or grown, ha ha.
-        if self.garmentTree:
-            lstItems = []
-            # Open a iterator to iterate through the tree (again) and build a list of lists of items in the tree to be added to the table.
-            itOrders = QTreeWidgetItemIterator(self.garmentTree)
-            while itOrders.value():
-                if itOrders.value() != None:
-                    # Below makes sure that there are values for both the price and the quantity.
-                    if itOrders.value().text(3) != "" and itOrders.value().text(2) != "":
-                        # This makes sure that we are at the correct level in the tree so we do try to add what shouldn't be added
-                        if itOrders.value().parent().parent().parent() != None:
-                            txtItems = []
-                            txtItems = [itOrders.value().parent().parent().parent().text(0), itOrders.value().parent().parent().text(0), 
-                                        itOrders.value().parent().text(0), itOrders.value().text(0), itOrders.value().text(1), 
-                                        str(format(float(itOrders.value().text(2)) * float(itOrders.value().text(3)), '.2f')), 
-                                        itOrders.value().text(3)]
-                            lstItems.append(txtItems)
-                itOrders += 1
-            # A check to make sure the iterator picked up items from the list.
-            if len(lstItems) > 0:
-                # Build the table to hold the information from the tree.
-                mainWin.tblOrderDetails.setRowCount(len(lstItems))
-                mainWin.tblOrderDetails.setColumnCount(7)
-                mainWin.tblOrderDetails.setAlternatingRowColors(True)
-                lstHeader = ["Name", "Design", "Category", "Type", "Size", "Price", "Qty" ]     
-                mainWin.tblOrderDetails.setHorizontalHeaderLabels(lstHeader)
-                #self.tblOrderDetails.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-                mainWin.tblOrderDetails.setWordWrap(False)
-                # Another check to make sure the list is there and has data, then we go through it and add data to the table.
-                if lstItems:
-                    for i, row in enumerate(lstItems):
-                        for j, col in enumerate(row):
-                            item = QTableWidgetItem(col)
-                            item.setFlags(Qt.ItemIsEditable)
-                            mainWin.tblOrderDetails.setItem(i, j, item)      
-                    
-                    mainWin.tblOrderDetails.resizeColumnsToContents()  
-                      
-                    #self.vBox.addWidget(self.tblOrderDetails)
-                    mainWin.tblOrderDetails.show() 
-                    testBox = mainWin.totalBox()
-                    mainWin.winGrid.addWidget(testBox, 2, 1, 1, 1)
-                    #print("hit update orders")  
-            else:
-                mainWin.tblOrderDetails.hide()
-              
-    def updateNameDesign(self):
+    def updateNameDesign(self, item):
         treeName = self.sender()
-        self.getTreeVars(treeName)
-        
+       
         if str(treeName.objectName()) == 'garmentTree':
             #If top level (Name) node is selected.
             if treeName.currentItem().parent() == None:
@@ -878,8 +1001,8 @@ class GarmentTree(QTreeWidget):
                     mainWin.lblTxtVar2.setText(var[1])
                 else: 
                     mainWin.lblTxtVar1.setText(var)
-                    mainWin.lblVar2.hide()
-                    mainWin.lblTxtVar2.hide()
+                    mainWin.lblVar2.setText(None)
+                    mainWin.lblTxtVar2.setText(None)
                 skuCode = treeName.currentItem().child(0).text(0)
                 self.orderVars = (treeName.currentItem().text(0))
             #Fourth tree node selected (sizes)
@@ -891,8 +1014,8 @@ class GarmentTree(QTreeWidget):
                     mainWin.lblTxtVar2.setText(var[1])
                 else:
                     mainWin.lblTxtVar1.setText(var)
-                    mainWin.lblVar2.hide()
-                    mainWin.lblTxtVar2.hide()                    
+                    mainWin.lblVar2.setText(None)
+                    mainWin.lblTxtVar2.setText(None)                 
                 skuCode = treeName.currentItem().parent().parent().text(0)
                 self.orderVars = (treeName.currentItem().parent().parent().parent().text(0))               
             #Second tree node is selected (Sku)
@@ -904,8 +1027,8 @@ class GarmentTree(QTreeWidget):
                     mainWin.lblTxtVar2.setText(var[1])
                 else:
                     mainWin.lblTxtVar1.setText(var)
-                    mainWin.lblVar2.hide()
-                    mainWin.lblTxtVar2.hide()                   
+                    mainWin.lblVar2.setText(None)
+                    mainWin.lblTxtVar2.setText(None)                   
                 skuCode = treeName.currentItem().text(0)
                 self.orderVars = (treeName.currentItem().parent().text(0))
             #Third tree node selected (garment, T-Shirts)
@@ -917,61 +1040,20 @@ class GarmentTree(QTreeWidget):
                     mainWin.lblTxtVar2.setText(var[1])
                 else:
                     mainWin.lblTxtVar1.setText(var)
-                    mainWin.lblVar2.hide()
-                    mainWin.lblTxtVar2.hide                    
+                    mainWin.lblVar2.setText(None)
+                    mainWin.lblTxtVar2.setText(None)               
                 skuCode = treeName.currentItem().parent().text(0)    
                 self.orderVars = (treeName.currentItem().parent().parent().text(0))
-        mainWin.lblSkuName.setText(skuCode)
-        mainWin.loadDesignItem(skuCode)         
-        #self.updateOrderDetails(self)    
         
-    def getTreeVars(self, garmTree):
-        treeName = garmTree
-        if str(treeName.objectName()) == 'garmentTree':
-            #If top level (Name) node is selected.
-            if treeName.currentItem().parent() == None:
-                var = treeName.currentItem().text(0)
-                if var.find('::', 0, len(var)) > 0:
-                    var = var.split(' :: ')
-                    self.var1 = var[0]
-                    self.var2 = var[1]
-                else: 
-                    self.var1 = var
-                    self.var2 = None
-            #Fourth tree node selected (sizes)
-            elif treeName.currentItem().child(0) == None:
-                var = treeName.currentItem().parent().parent().parent().text(0)
-                if var.find('::', 0, len(var)) > 0:
-                    var = var.split(' :: ')
-                    self.var1 = var[0] 
-                    self.var2 = var[1]
-                else:
-                    self.var1 = var
-                    self.var2 = None
-            #Second tree node is selected (Sku)
-            elif treeName.currentItem().child(0).child(0) != None and treeName.currentItem().parent() != None:
-                var = treeName.currentItem().parent().text(0)
-                if var.find('::', 0, len(var)) > 0:
-                    var = var.split(' :: ')
-                    self.var1 = var[0]
-                    self.var2 = var[1]
-                else:
-                    self.var1 = var
-                    self.var2 = None
-            #Third tree node selected (garment, T-Shirts)
-            elif treeName.currentItem().child(0) != None and treeName.currentItem().parent().parent() != None:
-                var = treeName.currentItem().parent().parent().text(0)
-                if var.find('::', 0, len(var)) > 0:
-                    var = var.split(' :: ')
-                    self.var1 = var[0]
-                    self.var2 = var[1]
-                else:
-                    self.var1 = var
-                    self.var2 = None
-    
-        return self.var1, self.var2
-    
-    def changeCustName(self):
+        self.var1 = mysql_db.get_first_var(self, skuCode)
+        self.var2 = mysql_db.get_second_var(self, skuCode)   
+        if self.var2:
+            mainWin.lblVar2.setText(self.var2)     
+   
+        mainWin.lblSkuName.setText(skuCode)
+        mainWin.loadDesignItem(skuCode)
+ 
+    def addVariables(self):
         sku_code = mainWin.lblSkuName.text()
         self.var1 = mysql_db.get_first_var(self, sku_code)
         self.var2 = mysql_db.get_second_var(self, sku_code)
@@ -988,11 +1070,10 @@ class GarmentTree(QTreeWidget):
                     self.orderVars = self.orderVars +" :: "+ inVar2
                     mainWin.lblTxtVar2.setText(inVar2)
                     mainWin.lblVar2.setText(self.var2)
-                    
-
+                  
     def getCustomerName(self, sku_code = None):
         #Grabs the last var2 that was used.
-        if self.var2 == None and mainWin.lblVar2 != None:
+        if self.var2 == None and mainWin.lblVar2.text() != None:
             self.var2 = mainWin.lblVar2.text()
         #var2 = mysql_db.get_second_var(self, sku_code)
         if not self.var1:
@@ -1005,16 +1086,15 @@ class GarmentTree(QTreeWidget):
                 var2 = mysql_db.get_second_var(self, sku_code)
                 if not var2:
                     self.var2 = None
-                    mainWin.lblVar2.hide()
-                    mainWin.lblTxtVar2.hide()
-                    QApplication.instance().processEvents()               
-                    self.orderVars = mainWin.lblTxtVar1.text()                    
+                    mainWin.lblVar2.setText(None)
+                    mainWin.lblTxtVar2.setText(None)
+                    #self.orderVars = inVar1                   
                 else:
                     inVar2, ok = QInputDialog.getText(self, "Enter "+var2, "Please Enter " +var2+ ":")
                     if ok:
                         mainWin.lblVar2.setText(var2)
                         mainWin.lblTxtVar2.setText(inVar2)
-                        mainWin.var2 = inVar2
+                        self.var2 = inVar2
                         self.orderVars = self.orderVars + " :: " + inVar2
         elif self.var1 and not self.var2:
             var2 = mysql_db.get_second_var(self, sku_code)
@@ -1023,16 +1103,15 @@ class GarmentTree(QTreeWidget):
                 if ok:
                     mainWin.lblVar2.setText(var2)
                     mainWin.lblTxtVar2.setText(inVar2)
-                    mainWin.var2 = inVar2
+                    self.var2 = inVar2
                     self.orderVars = self.orderVars + " :: " + inVar2
         elif self.var1 and self.var2:
             var1 = mysql_db.get_first_var(self, sku_code)
             var2 = mysql_db.get_second_var(self, sku_code)
             if not var2:
                 self.var2 = None
-                mainWin.lblVar2.hide()
-                mainWin.lblTxtVar2.hide()
-                QApplication.instance().processEvents()
+                mainWin.lblVar2.setText(None)
+                mainWin.lblTxtVar2.setText(None)
                 if mainWin.lblVar1.text() == var1:               
                     self.orderVars = mainWin.lblTxtVar1.text()
                 else:
@@ -1058,8 +1137,13 @@ class GarmentTree(QTreeWidget):
                         mainWin.lblVar2.setText(var2)
                         mainWin.lblTxtVar2.setText(inVar2)
                         self.orderVars = self.orderVars + " :: " + inVar2    
-                        
+
+#########################################################################################################################################################################
+### Class for widget pop up to change sku value in garment tree. ########################################################################################################
+#########################################################################################################################################################################                        
 class EditTreeSku(QDialog):
+    newSku = ""
+    
     def __init__(self, parent=None):
         super(EditTreeSku, self).__init__(parent)
         
@@ -1076,14 +1160,6 @@ class EditTreeSku(QDialog):
         bgColor = QPalette()
         bgColor.setColor(self.backgroundRole(), Qt.gray)
         self.setPalette(bgColor)
-        #self.setWindoIcon('don\'t have one yet.')
-
-        pos = mainWin.pos()
- 
-        x = pos.x() - ((self.width()/2) - (mainWin.width()/2)) 
-        y = pos.y() - ((self.height()/2) - (mainWin.height()/2)) 
-        
-        #self.setGeometry(x,y, 350, 500)        
         
     def createHeader(self):
         wht = QPalette()
@@ -1114,19 +1190,21 @@ class EditTreeSku(QDialog):
         for item in selItems:
             #Get sku from tree to use when deleting
             selSku = item.text(0)
-            #Get the variables from the tree for use later on.
+            #Get the variables from the tree for use later on (ie Name and Place).
             treeVars = item.parent().text(0)
             self.gt.orderVars = treeVars
             
             lsGarmName = []
             lsGarmQty = []
             for i in range(item.childCount()):
+                #get a list of all garment types that have been added to the tree for the sku.
                 lsGarmName.append(item.child(i).text(0))
                 for j in range(item.child(i).childCount()):
+                    #get a list of all the garment names and sizes that have a quantity of more that one for each garment type
                     if item.child(i).child(j).text(3) != "":
                         lsTree.append(item.child(i).child(j).text(0) + " " + item.child(i).child(j).text(1))
                         lsGarmQty.append([item.child(i).child(j).text(0) + " " + item.child(i).child(j).text(1), item.child(i).child(j).text(3)]) 
-
+        #get a list of all the skus that are associated with the sku that was selected.                        
         aSkus = mysql_db.get_assoc_skus(self, selSku)
         skus = aSkus.split(":")
         
@@ -1135,24 +1213,31 @@ class EditTreeSku(QDialog):
         hbSkus = {}
         i = 0
         j = 0
+        #loop through the list of skus and create buttons and a list of items not available for each associated sku.
         for sku in skus:
+            #so we do see the sku that was selected in the dialog.
             if sku != item.text(0):
-
+                
                 rbSkus = QRadioButton(sku)
                 rbSkus.toggled.connect(self.setSku)
                 rbSkus.setFont(QFont("Times", 10, QFont.Bold))
-
-                img = mysql_db.get_tshirt_image(self, sku)
-
+                
+                #get the t-shirt image from the database
+                img = mysql_db.get_tshirt_image_color(self, sku)
+                #get color of the t-shirt
+                col = img[1]
+                
                 pix = QLabel()
                 smImg = QPixmap("//wampserver/"+img[0])
                 myScaledPixmap = smImg.scaled(75, 75, Qt.KeepAspectRatio)
                 pix.setPixmap(myScaledPixmap)
                 
+                #text edit to display items that are not available in the sku that were in the selected sku.
                 teNotAvail = QTextEdit()
                 teNotAvail.setMaximumHeight(100)
                 teNotAvail.setReadOnly(True)
-                teNotAvail.setMaximumWidth(250)
+                teNotAvail.setMaximumWidth(200)
+                teNotAvail.insertHtml("<b><u>Not Available:</u></b><br/>\n")
                 
                 hbSkus[sku] = QHBoxLayout()
                 hbSkus[sku].setObjectName(sku)
@@ -1164,27 +1249,31 @@ class EditTreeSku(QDialog):
                 vbImg.addWidget(rbSkus)
                 vbImg.addStretch(1)
                 
-                lblNotAvail = QLabel("Not Available:")
-                lblNotAvail.setFont(QFont("Times", 10, QFont.Bold))
+                lblColor = QLabel(col)
+                lblColor.setFont(QFont("Times", 10, QFont.Bold))
                 
                 vbNotAvail = QVBoxLayout()
                 vbNotAvail.setObjectName('not avail')
-                vbNotAvail.addWidget(lblNotAvail)
+                vbNotAvail.addWidget(lblColor)
                 vbNotAvail.addWidget(teNotAvail)
                 vbNotAvail.addStretch(1)                
-
+                
+                lnColor = QPalette()
+                lnColor.setColor(self.foregroundRole(), Qt.white)
+                
                 vline = QFrame()
                 vline.setFrameShape(QFrame.VLine)
-                vline.setFrameShadow(QFrame.Sunken)
+                vline.setLineWidth(4)
+                vline.setPalette(lnColor)
                                 
                 hbSkus[sku].addLayout(vbImg)
                 hbSkus[sku].addLayout(vbNotAvail)
                 hbSkus[sku].addWidget(vline)
                 
                 hline = QFrame()
-                #line.setGeometry(QRect(320, 150, 118, 3))
                 hline.setFrameShape(QFrame.HLine)
-                hline.setFrameShadow(QFrame.Sunken)
+                hline.setPalette(lnColor)
+                hline.setLineWidth(3)
                 
                 vbSkus = QVBoxLayout()
                 vbSkus.setObjectName('vb sku')
@@ -1198,6 +1287,7 @@ class EditTreeSku(QDialog):
                 for row in lsTree:
                     if row not in availSkus:
                         teNotAvail.insertPlainText("   " + row + "\n")
+                teNotAvail.moveCursor(QTextCursor.Start)
                 
                 if j == 3:
                     i += 1
@@ -1229,49 +1319,76 @@ class EditTreeSku(QDialog):
         #garmName = list of garment names that were loaded for the sku that is being changed.
         #garmQtys = list of lists of the qtys that were attached to each individual garments.
         
-        for name in garmName: 
-            #grabs the id for the garment name (i.e. T-Shirt)
-            garmID = mysql_db.get_garment_type_id(self, name)
-            #loads the tree garments for the new sku, based on what was in the tree
-            mainWin.gt.loadGarmentInfo(self.newSku, str(garmID), name)
-        #this will refresh the design buttons on the top so the sku's match up.
-        mainWin.loadDesignItem(self.newSku)
-        
-        #Update new sku with the order quantities of the old sku
-        itChange = QTreeWidgetItemIterator(mainWin.gt.garmentTree)
-        #First open yet another iterator.
-        while itChange.value():        
-            #if the variables and the sku match...keep going.
-            if itChange.value().text(0) == self.newSku and itChange.value().parent().text(0) == self.gt.orderVars:
-                tot = 0
-                for j in range(itChange.value().childCount()):
-                    item = itChange.value().child(j)
-                    for k in range(item.childCount()):
-                        for i in range(len(garmQtys)):
-                            if item.child(k).text(0) + " " + item.child(k).text(1) == garmQtys[i][0]:
-                                item.child(k).setText(3, garmQtys[i][1]) 
-                                if int(garmQtys[i][1]) > 0:
-                                    tot += int(garmQtys[i][1])
-                                    print(tot)
-                                    item.setText(3, str(tot))
-                    tot = 0
-            itChange += 1
-        #this will update the table with the new sku and proper values from the old sku.
-        self.close()
-        mainWin.setEnabled(True)
+        #make sure a radio button was selected
+        if not self.newSku:
+            QMessageBox.information(self, "Select SKU", "Please Select a SKU!", QMessageBox.Ok)
+        else:
+            #get information of the design
+            availGarmTypes = mysql_db.design_info(self, self.newSku)
+            #create a list and fill it with only the garment types available for that design
+            lsAvailTypes = []
+            for garm in availGarmTypes:
+                lsAvailTypes.append(garm[7])
+
+            for name in garmName:
+                #if the garment type is in the list keep going.
+                if name in lsAvailTypes:
+                    #grabs the id for the garment name (i.e. T-Shirt)
+                    garmID = mysql_db.get_garment_type_id(self, name)
+                    #loads the tree garments for the new sku, based on what was in the tree
+                    mainWin.gt.loadGarmentInfo(self.newSku, str(garmID), name)
+            #this will refresh the design buttons on the top so the sku's match up.
+            mainWin.loadDesignItem(self.newSku)
             
+            #Update new sku with the order quantities of the old sku
+            itChange = QTreeWidgetItemIterator(mainWin.gt.garmentTree)
+            #First open yet another iterator.
+            while itChange.value():        
+                #if the variables and the sku match...keep going.
+                if itChange.value().text(0) == self.newSku and itChange.value().parent().text(0) == self.gt.orderVars:
+                    tot = 0
+                    #get a count of all of the garment types for the sku.
+                    for j in range(itChange.value().childCount()):
+                        #set item equal to the garment type (ie T-Shirts)
+                        item = itChange.value().child(j)
+                        #get a count of all the styles and sizes for the garment type.
+                        for k in range(item.childCount()):
+                            #for every style and size that had a quantity we want to add that quantity to the new sku that was added.
+                            for i in range(len(garmQtys)):
+                                #make sure the style and size match.
+                                if item.child(k).text(0) + " " + item.child(k).text(1) == garmQtys[i][0]:
+                                    #if there is a match set the quantity on the new sku
+                                    item.child(k).setText(3, garmQtys[i][1]) 
+                                    #finally keep a running total for each garment and add the total to the garment type itself.
+                                    if int(garmQtys[i][1]) > 0:
+                                        tot += int(garmQtys[i][1])
+                                        item.setText(3, str(tot))
+                        tot = 0
+                itChange += 1
+            self.close()
+            mainWin.setEnabled(True)
+                
     def removeOldSku(self, selItems):
-        root = mainWin.gt.garmentTree.invisibleRootItem()
-        for item in selItems:
-            (item.parent() or root).removeChild(item)
-        mainWin.gt.updateOrderDetails()
+        #make sure a radio button was selected
+        if self.newSku:
+            root = mainWin.gt.garmentTree.invisibleRootItem()
+            for item in selItems:
+                (item.parent() or root).removeChild(item)
+            
+            #this will update the table with the new sku and proper values from the old sku.
+            mainWin.updateOrderDetails()
+        else: pass
                                                     
     def mousePressEvent(self, event):
+        #This is to be able to move the window around without a frame
         if event.button() == Qt.LeftButton:
             self.leftClick = True
             self.offset = event.pos()
+        else:
+            self.leftClick = False
     
     def mouseMoveEvent(self, event):
+        #This is to be able to move the window around without a frame
         if self.leftClick == True:
             x=event.globalX()
             y=event.globalY()
@@ -1281,6 +1398,10 @@ class EditTreeSku(QDialog):
             
     def mouseReleaseEvent(self, event):                             
         self.leftClick = False 
+
+#########################################################################################################################################################################
+### Class for connecting, retrieving and setting data on MySql ##########################################################################################################
+#########################################################################################################################################################################
                                 
 class mysql_db():
     def mysql_connect(self):
@@ -1315,10 +1436,10 @@ class mysql_db():
         """)
         return di.fetchall()
     
-    def get_tshirt_image(self, sku_code):
+    def get_tshirt_image_color(self, sku_code):
         gti = mysql_db.mysql_connect(self)
         gti.execute("""
-                        SELECT ic.inventories_image_url
+                        SELECT ic.inventories_image_url, i.inventories_color
                         FROM inventories_cache ic 
                         LEFT JOIN inventories i on ic.inventories_id = i.inventories_id
                         LEFT JOIN inventories_types it on ic.join_inventories_types_id = it.inventories_types_id
@@ -1409,6 +1530,10 @@ class mysql_db():
         db.execute("SELECT inventories_types_id FROM inventories_types WHERE inventories_types_name = '"+ garmType +"'")
         ds = db.fetchone()
         return ds[0]
+
+#########################################################################################################################################################################
+### Class for connecting, retrieving and setting data on SQL Server #####################################################################################################
+#########################################################################################################################################################################
 
 class mssql_db():
     def mssql_connect(self):

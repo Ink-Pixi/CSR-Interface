@@ -644,9 +644,8 @@ class CSRWidgets(QWidget):
             var2 = mysql_db.getSecondVar(self, sku_code)
             if not var2:
                 self.var2 = None
-                self.lblVar2.hide()
-                self.lblTxtVar2.hide()
-                QApplication.instance().processEvents()
+                self.lblVar2.setText(None)
+                self.lblTxtVar2.setText(None)
                 if self.lblVar1.text() == var1:               
                     self.orderVars = self.lblTxtVar1.text()
                 else:
