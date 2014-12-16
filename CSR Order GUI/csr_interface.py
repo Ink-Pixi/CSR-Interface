@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
                              QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
-                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox)
+                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QTabWidget, QFormLayout, QGroupBox)
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPalette
 import mysql.connector
 import pyodbc
@@ -223,7 +223,7 @@ class MainWindow(QMainWindow):
         self.lblSkuName.setText(sku_code)
         des = mysql_db.design_info(self, sku_code)
         
-        self.vbMain = QVBoxLayout()
+        self.test = QVBoxLayout()
         #self.winGrid = QGridLayout()
         
         if not des:
@@ -272,14 +272,32 @@ class MainWindow(QMainWindow):
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
         
         self.tblOrderDetails = self.createOrderTable()
+        self.tblOrderDetails2 = self.createOrderTable()
+        
         self.totBox = self.totalBox()
         
-        self.vbMain.addWidget(hFrame)
-        self.vbMain.addWidget(self.tblOrderDetails)
-        self.vbMain.addLayout(self.totBox)
+        self.test.addWidget(hFrame)
+        self.test.addWidget(self.tblOrderDetails)
+        self.test.addLayout(self.totBox)
        
-        self.vbMain.addStretch(1)
-
+        self.test.addStretch(1)
+        
+        tabTest = QTabWidget()
+        
+        tab1 = QWidget()
+        tab1.setLayout(self.test)
+        
+        tab2 = QWidget()
+        testing = self.customerInfo()
+        self.test2 = QHBoxLayout()
+        self.test2.addWidget(testing)
+        tab2.setLayout(self.test2)
+        
+        tabTest.addTab(tab1, 'testing')
+        tabTest.addTab(tab2, 'testing 2')
+        self.vbMain = QVBoxLayout()
+        self.vbMain.addWidget(tabTest)
+        
         self.changeCentralWidget(self.vbMain)
         
         self.updateOrderDetails()
@@ -336,7 +354,7 @@ class MainWindow(QMainWindow):
                     for i, row in enumerate(lstItems):
                         for j, col in enumerate(row):
                             item = QTableWidgetItem(col)
-                            item.setFlags(Qt.ItemIsEditable)
+                            #item.setFlags(Qt.ItemIsEditable)
                             od.setItem(i, j, item)      
                     
                     od.resizeColumnsToContents()  
@@ -372,6 +390,22 @@ class MainWindow(QMainWindow):
         totBox.addStretch()
         
         return totBox
+    
+    def customerInfo(self):
+        gbCustInfo = QGroupBox()
+        frmCustInfo = QFormLayout()
+        
+        lblFirstName = QLabel('First Name:')
+        leFirstName = QLineEdit()
+        frmCustInfo.addRow(lblFirstName, leFirstName)
+        
+        lblLastName = QLabel('Last Name:')
+        leLastName = QLineEdit()
+        frmCustInfo.addRow(lblLastName, leLastName)
+        
+        gbCustInfo.setLayout(frmCustInfo)
+        
+        return gbCustInfo
     
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
