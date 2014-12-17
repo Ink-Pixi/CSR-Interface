@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
                              QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
-                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QTabWidget, QFormLayout, QGroupBox)
+                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox, QTabWidget, QCompleter)
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPalette
 import mysql.connector
 import pyodbc
@@ -19,8 +19,10 @@ class MainWindow(QMainWindow):
         self.createToolbars()
         self.createStatusBar()
         self.createDockWindows()
+        #self.createTabs()
        
-        self.changeCentralWidget(self.createDesignButtons('default')) #Sets central widget on init.
+        #self.changeCentralWidget(self.createDesignButtons('default')) #Sets central widget on init.
+        self.setCentralWidget(self.createTabs())
         self.setWindowTitle("CSR Proving Ground")
         
         self.resize(1500, 900)
@@ -55,8 +57,8 @@ class MainWindow(QMainWindow):
         
         self.searchToolBar = self.addToolBar("Search")
         
-        self.searchToolBar.addAction(self.homeAct)
-        self.searchToolBar.addSeparator()
+#         self.searchToolBar.addAction(self.homeAct)
+#         self.searchToolBar.addSeparator()
                 
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(150)
@@ -162,7 +164,9 @@ class MainWindow(QMainWindow):
         self.availableItems.clear()
         #self.orderItem.clear()
         searchTerm = self.searchBar.text()
-        self.changeCentralWidget(self.createDesignButtons(searchTerm))
+        self.clearLayout(self.vbSearch)
+        self.vbSearch.addLayout(self.createDesignButtons(searchTerm))
+        self.twMain.setCurrentIndex(0)
 
     def itemClicked_Click(self):
         button = self.sender()
@@ -197,6 +201,7 @@ class MainWindow(QMainWindow):
 
             # add to the layout
             btnLayout.addWidget(buttons[(i)], j, k)   
+
             
             if k == 3:
                 j += 1
@@ -208,6 +213,28 @@ class MainWindow(QMainWindow):
 
         return btnLayout
     
+    def createTabs(self):
+        self.twMain = QTabWidget()
+        
+        self.tabSearch = QWidget()
+        self.tabOrder = QWidget()
+        self.tabCust = QWidget()
+        
+        self.vbSearch = QVBoxLayout(self.tabSearch)
+        self.vbSearch.addLayout(self.createDesignButtons('default'))
+        self.twMain.addTab(self.tabSearch, 'Search')
+        
+        self.vbOrder = QVBoxLayout(self.tabOrder)
+        self.twMain.addTab(self.tabOrder, 'Order Details')
+        
+        self.hbCust = QHBoxLayout(self.tabCust)
+        self.hbCust.addLayout(self.createCustInfo())
+        self.twMain.addTab(self.tabCust, 'Customer Details')
+        
+        return self.twMain
+        
+        
+    
     def createActions(self):
 
         self.quitAct = QAction(QIcon('icon/exit.png'), "&Quit", self, shortcut="Ctrl+Q", statusTip="Quit the application", 
@@ -216,16 +243,15 @@ class MainWindow(QMainWindow):
         self.aboutAct = QAction("&About", self, statusTip="Show the application's About box", triggered=self.about)  
         self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Enter, statusTip="Find a design.",
                                  triggered=self.btnSearch_Click)
-        self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
-                               triggered=self.btnHome_Click)
+#         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
+#                                triggered=self.btnHome_Click)
         
     def loadDesignItem(self, sku_code):
         self.lblSkuName.setText(sku_code)
         des = mysql_db.design_info(self, sku_code)
         
-        self.test = QVBoxLayout()
-        #self.winGrid = QGridLayout()
-        
+        self.clearLayout(self.vbOrder)
+                        
         if not des:
             lblOpps = QLabel("""We could put a .png or something here, something better than text, to let the CSR's know that 
                              they searched an empty string or that the design they were looking for does not exist or that 
@@ -270,38 +296,43 @@ class MainWindow(QMainWindow):
         hFrame.setLayout(hBox)
         hFrame.setMaximumHeight(200)
         hFrame.setStyleSheet("background-color: rgb(255, 255, 255);") 
-        
+
         self.tblOrderDetails = self.createOrderTable()
-        self.tblOrderDetails2 = self.createOrderTable()
+        frmCust = self.showCustInfo()
+        totBox = self.totalBox()
         
-        self.totBox = self.totalBox()
+        vbDetails = QVBoxLayout()
+        vbDetails.addLayout(totBox)
+        vbDetails.addLayout(frmCust)
         
-        self.test.addWidget(hFrame)
-        self.test.addWidget(self.tblOrderDetails)
-        self.test.addLayout(self.totBox)
+        hbTbl = QHBoxLayout()
+        hbTbl.addWidget(self.tblOrderDetails)
+        hbTbl.addLayout(vbDetails)
+        #self.hbTbl.addStretch()
+        
+        if self.leFirstName.text() != "":
+            self.gbCustInfo.show()
+            self.lblCustTitle.show()
+        
+        self.vbOrder.addWidget(hFrame)
+        self.vbOrder.addLayout(hbTbl)
+        #self.vbOrder.addWidget(totBox)
        
-        self.test.addStretch(1)
-        
-        tabTest = QTabWidget()
-        
-        tab1 = QWidget()
-        tab1.setLayout(self.test)
-        
-        tab2 = QWidget()
-        testing = self.customerInfo()
-        self.test2 = QHBoxLayout()
-        self.test2.addWidget(testing)
-        tab2.setLayout(self.test2)
-        
-        tabTest.addTab(tab1, 'testing')
-        tabTest.addTab(tab2, 'testing 2')
-        self.vbMain = QVBoxLayout()
-        self.vbMain.addWidget(tabTest)
-        
-        self.changeCentralWidget(self.vbMain)
+        self.vbOrder.addStretch(1)
         
         self.updateOrderDetails()
-        self.gt.getCustomerName(sku_code)      
+        self.gt.getCustomerName(sku_code) 
+        self.twMain.setCurrentIndex(1)
+        
+    def clearLayout(self, layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.clearLayout(item.layout())        
         
     def createOrderTable(self):
         #Create table to hold and display details of order order as they are selected from the tree. 
@@ -354,7 +385,7 @@ class MainWindow(QMainWindow):
                     for i, row in enumerate(lstItems):
                         for j, col in enumerate(row):
                             item = QTableWidgetItem(col)
-                            #item.setFlags(Qt.ItemIsEditable)
+                            item.setFlags(Qt.ItemIsEditable)
                             od.setItem(i, j, item)      
                     
                     od.resizeColumnsToContents()  
@@ -370,42 +401,203 @@ class MainWindow(QMainWindow):
                     od.setMaximumWidth(tblWidth)
                     od.setMinimumWidth(tblWidth)
                     od.show() 
-                    self.lblTotPcs.setText("Total Pieces: " + str(totPcs))
-                    self.lblTotPri.setText("Total Price: $" + format(totPri, '.2f'))
+                    self.lblTotPcs.setText(str(totPcs))
+                    tenPct = False
+                    if totPcs >= 1 and totPcs <= 2:
+                        shipCost = 7.95
+                    elif totPcs >= 3 and totPcs <= 6:
+                        shipCost = 6.95
+                    elif totPcs >= 7:
+                        shipCost = 0.00
+                    if totPcs >= 12:
+                        tenPct = True
+                    print(totPcs, tenPct)
+                    self.lblTotShip.setText('$' + format(shipCost, '.2f'))
+                    self.lblTotPri.setText('$' + format(totPri, '.2f'))
+                    if tenPct == True:
+                        totFinal = totPri - (totPri * .1)
+                        self.lblTotPct.setText("10 Percent Off.")
+                    else:
+                        totFinal = totPri + shipCost
+                        self.lblTotPct.setText(None)
+                    self.lblTotFinal.setText('$' + format(totFinal, '.2f'))
                     
             else:
                 od.hide()        
-                self.lblTotPcs.hide()
-                self.lblTotPri.hide()
+                self.gbTotal.hide()
+                self.lblTotTitle.hide()
+                self.gbCustInfo.hide()
+                self.lblCustTitle.hide()
+
         
     def totalBox(self):
+        self.gbTotal = QGroupBox()
+        self.gbTotal.setStyleSheet("""QGroupBox {  border: 2px solid black; border-radius: 9px; font-size: 8px; font-weight: bold; margin-left: 25px; margin-right: 25px; margin-bottom: 15px} 
+                                      QLabel { font-size: 12px; font-weight: bold; font-family: Times; }""")
+        self.gbTotal.setMaximumWidth(400)
+        
+        self.lblTotTitle = QLabel('Order Totals:')
+        self.lblTotTitle.setStyleSheet("QLabel { font-size: 12; font-weight; margin-left: 25px; margin-right: 25px; }")
+        self.lblTotTitle.setFont(QFont('Times', 12, QFont.Bold))        
+        #self.lblTotTitle.hide()        
+        
+        frmTotal = QFormLayout()
+
         self.lblTotPcs = QLabel()
-        self.lblTotPcs.setFont(QFont("Helvetica",16,QFont.Bold))
+        frmTotal.addRow(QLabel('Total Pieces:'), self.lblTotPcs)
+        
         self.lblTotPri = QLabel()
-        self.lblTotPri.setFont(QFont("Helvetica",16,QFont.Bold))
+        frmTotal.addRow(QLabel('Sub-Total:'), self.lblTotPri)
         
-        totBox = QHBoxLayout()
-        totBox.addWidget(self.lblTotPcs)
-        totBox.addWidget(self.lblTotPri)
-        totBox.addStretch()
+        self.lblTotShip = QLabel()
+        frmTotal.addRow(QLabel('Shipping:'), self.lblTotShip)
+
+        self.lblTotPct = QLabel()
+        frmTotal.addRow(QLabel('Qty Discount:'), self.lblTotPct)
         
-        return totBox
+        self.lblTotFinal = QLabel()
+        frmTotal.addRow(QLabel('Grand-Total:'), self.lblTotFinal)
+        
+        self.gbTotal.setLayout(frmTotal)
+        
+        vbTotal = QVBoxLayout()
+        vbTotal.addWidget(self.lblTotTitle)
+        vbTotal.addWidget(self.gbTotal)
+        
+        return vbTotal
     
-    def customerInfo(self):
-        gbCustInfo = QGroupBox()
+    def createCustInfo(self):
         frmCustInfo = QFormLayout()
         
-        lblFirstName = QLabel('First Name:')
-        leFirstName = QLineEdit()
-        frmCustInfo.addRow(lblFirstName, leFirstName)
+        self.leFirstName = QLineEdit()
+        self.leFirstName.textChanged.connect(self.custInfoChanged)
+        self.leFirstName.setObjectName('firstName')
+        frmCustInfo.addRow(QLabel('First Name:'), self.leFirstName)
         
-        lblLastName = QLabel('Last Name:')
-        leLastName = QLineEdit()
-        frmCustInfo.addRow(lblLastName, leLastName)
+        self.leLastName = QLineEdit()
+        self.leLastName.textChanged.connect(self.custInfoChanged)
+        self.leLastName.setObjectName('lastName')
+        frmCustInfo.addRow(QLabel('Last Name:'), self.leLastName)
         
-        gbCustInfo.setLayout(frmCustInfo)
+        self.leStreet1 = QLineEdit()
+        self.leStreet1.textChanged.connect(self.custInfoChanged)
+        self.leStreet1.setObjectName('street1')
+        frmCustInfo.addRow(QLabel('Street 1:'), self.leStreet1)
         
-        return gbCustInfo
+        self.leStreet2 = QLineEdit()
+        self.leStreet2.textChanged.connect(self.custInfoChanged)
+        self.leStreet2.setObjectName('street2')
+        frmCustInfo.addRow(QLabel('Street 2:'), self.leStreet2)
+        
+        self.leCompany = QLineEdit()
+        self.leCompany.textChanged.connect(self.custInfoChanged)
+        self.leCompany.setObjectName('company')
+        frmCustInfo.addRow(QLabel('*Company:'), self.leCompany)
+        
+        states = mssql_db.getStates(self)
+        
+        stateCompleter = QCompleter(states)
+        stateCompleter.setCompletionMode(QCompleter.UnfilteredPopupCompletion)        
+        #stateCompleter.setCompletionMode(QCompleter.InlineCompletion)
+        stateCompleter.setCaseSensitivity(Qt.CaseInsensitive)
+        
+        self.leCity = QLineEdit()
+        self.leCity.textChanged.connect(self.custInfoChanged)
+        self.leCity.setObjectName('city')
+        frmCustInfo.addRow(QLabel('City:'), self.leCity)        
+        
+        self.leState = QLineEdit()
+        self.leState.setPlaceholderText("State")
+        self.leState.setCompleter(stateCompleter)
+        self.leState.textChanged.connect(self.custInfoChanged)
+        self.leState.setObjectName('state')
+        frmCustInfo.addRow(QLabel('State:'), self.leState)
+        #self.leState.setFont(QFont("Times", 8, QFont.Normal))
+        #self.leState.setMaximumWidth(50)
+        
+        self.leZip = QLineEdit()
+        self.leZip.textChanged.connect(self.custInfoChanged)
+        self.leZip.setObjectName('zip')
+        frmCustInfo.addRow(QLabel('Zip:'), self.leZip)
+
+        return frmCustInfo
+    
+    def showCustInfo(self):
+        self.lblCustTitle = QLabel('Customer\Billing Info:')
+        self.lblCustTitle.setStyleSheet("QLabel { font-size: 12; font-weight; margin-left: 25px; margin-right: 25px; }")
+        self.lblCustTitle.setFont(QFont('Times', 12, QFont.Bold))        
+        self.lblCustTitle.hide()
+        
+        self.gbCustInfo = QGroupBox()
+        self.gbCustInfo.setStyleSheet("""QGroupBox {  border: 2px solid black; border-radius: 9px; font-size: 12px; font-weight: bold; margin-left: 25px; margin-right: 25px;} 
+                                      QLabel { font-size: 12px; font-weight: bold; font-family: Times; }""")
+        frmCustInfo = QFormLayout()
+        
+        self.lblTxtFname = QLabel()
+        self.lblTxtFname.setText(self.leFirstName.text())
+        frmCustInfo.addRow(QLabel('First Name:'), self.lblTxtFname)
+        
+        self.lblTxtLname = QLabel()
+        self.lblTxtLname.setText(self.leLastName.text())
+        frmCustInfo.addRow(QLabel('Last Name:'), self.lblTxtLname)
+        
+        self.lblTxtStreet1 = QLabel()
+        self.lblTxtStreet1.setText(self.leStreet1.text())
+        frmCustInfo.addRow(QLabel('Street 1:'), self.lblTxtStreet1)
+        
+        self.lblTxtStreet2 = QLabel()
+        self.lblTxtStreet2.setText(self.leStreet2.text())
+        frmCustInfo.addRow(QLabel('Street 2:'), self.lblTxtStreet2)
+        
+        self.lblTxtCompany = QLabel()
+        self.lblTxtCompany.setText(self.leCompany.text())
+        frmCustInfo.addRow(QLabel('*Company:'), self.lblTxtCompany)
+        
+        self.lblTxtCity = QLabel()
+        self.lblTxtCity.setText(self.leCity.text())
+        frmCustInfo.addRow(QLabel('City:'), self.lblTxtCity)        
+        
+        self.lblTxtState = QLabel()
+        self.lblTxtState.setText(self.leState.text())
+        frmCustInfo.addRow(QLabel('State:'), self.lblTxtState)
+        
+        self.lblTxtZip = QLabel()
+        self.lblTxtZip.setText(self.leZip.text())
+        frmCustInfo.addRow(QLabel('Zip:'), self.lblTxtZip)
+        
+        self.gbCustInfo.setLayout(frmCustInfo)
+        self.gbCustInfo.hide()
+        
+        vbCustInfo = QVBoxLayout()
+        vbCustInfo.addWidget(self.lblCustTitle)
+        vbCustInfo.addWidget(self.gbCustInfo)
+        vbCustInfo.addStretch()
+        
+        return vbCustInfo
+    
+    def custInfoChanged(self, text):
+        le = self.sender()
+        print(le.objectName(), text)
+        if le != None:
+            self.gbCustInfo.show()
+            self.lblCustTitle.show()
+            if le.objectName() == 'firstName':
+                self.lblTxtFname.setText(text)
+            elif le.objectName() == 'lastName':
+                self.lblTxtLname.setText(text)
+            elif le.objectName() == 'street1':
+                self.lblTxtStreet1.setText(text)
+            elif le.objectName() == 'street2':
+                self.lblTxtStreet2.setText(text)
+            elif le.objectName() == 'company':
+                self.lblTxtCompany.setText(text)
+            elif le.objectName() == 'city':
+                self.lblTxtCity.setText(text)                
+            elif le.objectName() == 'state':
+                self.lblTxtState.setText(text)
+            elif le.objectName() == 'zip':
+                self.lblTxtZip.setText(text)
+
     
     def changeCentralWidget(self, widgetLayout):
         self.mainWidget = QWidget()
@@ -1570,14 +1762,23 @@ class mysql_db():
 #########################################################################################################################################################################
 
 class mssql_db():
-    def mssql_connect(self):
+    def mssql_connect(self, db):
         try:
-            mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE=ImportExport; Trusted_Connection=yes')
+            mssql_db.conn = pyodbc.connect('DRIVER={SQL Server}; SERVER=SQLSERVER; DATABASE='+db+'; Trusted_Connection=yes')
             mssql_db.db = mssql_db.conn.cursor()
         except BaseException as e:
-            QMessageBox.critical(self, 'Database Error', "Cannont connect to the MS SQL Server: \n" + str(e), QMessageBox.Ok)
+            QMessageBox.critical(self, 'Database Error', "Cannot connect to the MS SQL Server: \n" + str(e), QMessageBox.Ok)
+        return mssql_db.db        
         
-        return mssql_db.db                          
+    def getStates(self):
+        db = mssql_db.mssql_connect(self, "ProblemSheets")
+        db.execute("SELECT stateAbbr FROM dbo.tblState")
+        ds = db.fetchall()
+        states = []
+        for i in ds:
+            states.append(i[0])
+        return states
+                          
 
 if __name__ == '__main__':
 
