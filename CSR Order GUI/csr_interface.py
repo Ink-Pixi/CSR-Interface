@@ -2,11 +2,11 @@ import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
                              QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
-                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox, QTabWidget, QCompleter)
+                             QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox, QTabWidget, QCompleter, QCheckBox)
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPalette
 import mysql.connector
 import pyodbc
-from PyQt5.Qt import QTextCursor
+from PyQt5.Qt import QTextCursor, QComboBox
 
 class MainWindow(QMainWindow):
     
@@ -19,9 +19,7 @@ class MainWindow(QMainWindow):
         self.createToolbars()
         self.createStatusBar()
         self.createDockWindows()
-        #self.createTabs()
        
-        #self.changeCentralWidget(self.createDesignButtons('default')) #Sets central widget on init.
         self.setCentralWidget(self.createTabs())
         self.setWindowTitle("CSR Proving Ground")
         
@@ -62,7 +60,7 @@ class MainWindow(QMainWindow):
                 
         self.searchBar = QLineEdit()
         self.searchBar.setMaximumWidth(150)
-        self.searchBar.setPlaceholderText('Search for design')
+        self.searchBar.setPlaceholderText('Search for a design')
         self.searchBar.returnPressed.connect(self.btnSearch_Click)
         self.searchToolBar.addWidget(self.searchBar)
         
@@ -149,16 +147,6 @@ class MainWindow(QMainWindow):
     def btnAddVars_Click(self):
         self.gt.addVariables()
         
-    def btnHome_Click(self):
-        self.changeCentralWidget(self.createDesignButtons('default'))
-        self.availableItems.clear()
-        itSku = QTreeWidgetItemIterator(self.gt.garmentTree) 
-#################################################################################           
-        while itSku.value():
-            if itSku.value().parent() != None:   
-                itSku.value().setExpanded(False)
-            itSku += 1
-#################################################################################
         
     def btnSearch_Click(self):
         self.availableItems.clear()
@@ -180,37 +168,42 @@ class MainWindow(QMainWindow):
         if qryId == 'default':
             qryResult = mysql_db.sale_buttons(self)
         else:
-            qryResult = mysql_db.search_designs(self,qryId)
+            qryResult = mysql_db.search_designs(self, qryId)
+            
+        
             
         k = 0
         j = 0
-        for i in range(len(qryResult)):
-            t = qryResult[i]
-
-            # keep a reference to the buttons
-            buttons[(i)] = QToolButton(self)
-            buttons[(i)].setIcon(QIcon("//wampserver/" + str(t[2])))
-            buttons[(i)].setIconSize(QSize(180, 180))
-            buttons[(i)].setAutoRaise(True)
-            buttons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-            buttons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
-            buttons[(i)].setFont(QFont("Helvetica",12,QFont.Bold))
-            buttons[(i)].setObjectName(str(t[1]))
-            buttons[(i)].setText(str(t[1]) + '\n' + str(t[0]))
-            buttons[(i)].clicked.connect(self.btnSale_Click)
-
-            # add to the layout
-            btnLayout.addWidget(buttons[(i)], j, k)   
-
-            
-            if k == 3:
-                j += 1
-                k = 0
-            else:
-                k += 1  
+        if qryResult:
+            for i in range(len(qryResult)):
+                t = qryResult[i]
+    
+                # keep a reference to the buttons
+                buttons[(i)] = QToolButton(self)
+                buttons[(i)].setIcon(QIcon("//wampserver/" + str(t[2])))
+                buttons[(i)].setIconSize(QSize(180, 180))
+                buttons[(i)].setAutoRaise(True)
+                buttons[(i)].setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+                buttons[(i)].setStyleSheet("background-color: rgb(255, 255, 255);")
+                buttons[(i)].setFont(QFont("Helvetica",12,QFont.Bold))
+                buttons[(i)].setObjectName(str(t[1]))
+                buttons[(i)].setText(str(t[1]) + '\n' + str(t[0]))
+                buttons[(i)].clicked.connect(self.btnSale_Click)
+    
+                # add to the layout
+                btnLayout.addWidget(buttons[(i)], j, k)   
+    
                 
-            btnLayout.setObjectName("designPage")    
-
+                if k == 3:
+                    j += 1
+                    k = 0
+                else:
+                    k += 1  
+                    
+                btnLayout.setObjectName("designPage")    
+        else:
+            QMessageBox.information(self, 'No Match', 'No designs match the search terms.  Please try again.', QMessageBox.Ok)
+            
         return btnLayout
     
     def createTabs(self):
@@ -227,8 +220,9 @@ class MainWindow(QMainWindow):
         self.vbOrder = QVBoxLayout(self.tabOrder)
         self.twMain.addTab(self.tabOrder, 'Order Details')
         
-        self.hbCust = QHBoxLayout(self.tabCust)
+        self.hbCust = QVBoxLayout(self.tabCust)
         self.hbCust.addLayout(self.createCustInfo())
+        self.hbCust.addStretch()
         self.twMain.addTab(self.tabCust, 'Customer Details')
         
         return self.twMain
@@ -241,7 +235,7 @@ class MainWindow(QMainWindow):
                                triggered=self.close)
 
         self.aboutAct = QAction("&About", self, statusTip="Show the application's About box", triggered=self.about)  
-        self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, shortcut=Qt.Key_Enter, statusTip="Find a design.",
+        self.searchAct = QAction(QIcon('icon/search.png'), '&Search', self, statusTip="Find a design.",
                                  triggered=self.btnSearch_Click)
 #         self.homeAct = QAction(QIcon('icon/home-icon.png'), '&Home', self, shortcut="Ctrl+H", statusTip="Return to home screen.", 
 #                                triggered=self.btnHome_Click)
@@ -251,13 +245,6 @@ class MainWindow(QMainWindow):
         des = mysql_db.design_info(self, sku_code)
         
         self.clearLayout(self.vbOrder)
-                        
-        if not des:
-            lblOpps = QLabel("""We could put a .png or something here, something better than text, to let the CSR's know that 
-                             they searched an empty string or that the design they were looking for does not exist or that 
-                             they mistyped what they were looking for.""", self)
-            self.grid.addWidget(lblOpps)
-            self.changeCentralWidget(self, self.vBox)
 
         self.currentInfo = {}
         for i in des:
@@ -302,8 +289,9 @@ class MainWindow(QMainWindow):
         totBox = self.totalBox()
         
         vbDetails = QVBoxLayout()
-        vbDetails.addLayout(totBox)
+        vbDetails.addWidget(totBox)
         vbDetails.addLayout(frmCust)
+        vbDetails.addStretch()
         
         hbTbl = QHBoxLayout()
         hbTbl.addWidget(self.tblOrderDetails)
@@ -312,7 +300,11 @@ class MainWindow(QMainWindow):
         
         if self.leFirstName.text() != "":
             self.gbCustInfo.show()
-            self.lblCustTitle.show()
+            if self.cbPayType.currentIndex() != 0:
+                self.gbPayInfo.show()
+            #self.lblCustTitle.show()
+            if self.chkDitto.isChecked() == False:
+                self.gbShipInfo.show()
         
         self.vbOrder.addWidget(hFrame)
         self.vbOrder.addLayout(hbTbl)
@@ -425,21 +417,40 @@ class MainWindow(QMainWindow):
             else:
                 od.hide()        
                 self.gbTotal.hide()
-                self.lblTotTitle.hide()
                 self.gbCustInfo.hide()
-                self.lblCustTitle.hide()
+                self.gbShipInfo.hide()
 
         
     def totalBox(self):
-        self.gbTotal = QGroupBox()
-        self.gbTotal.setStyleSheet("""QGroupBox {  border: 2px solid black; border-radius: 9px; font-size: 8px; font-weight: bold; margin-left: 25px; margin-right: 25px; margin-bottom: 15px} 
-                                      QLabel { font-size: 12px; font-weight: bold; font-family: Times; }""")
-        self.gbTotal.setMaximumWidth(400)
         
-        self.lblTotTitle = QLabel('Order Totals:')
-        self.lblTotTitle.setStyleSheet("QLabel { font-size: 12; font-weight; margin-left: 25px; margin-right: 25px; }")
-        self.lblTotTitle.setFont(QFont('Times', 12, QFont.Bold))        
-        #self.lblTotTitle.hide()        
+        style = """QGroupBox 
+                   { 
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                         border: 2px solid gray;
+                         border-radius: 5px;
+                         margin-top: 2.5ex; /* leave space at the top for the title */
+                         font-size: 14px;
+                         font-weight: bold;
+                         margin-left: 25px;
+                    } 
+                   QLabel 
+                   { 
+                       font-size: 12px; 
+                       font-weight: bold; 
+                       font-family: Veranda; 
+                   } 
+                   QGroupBox::title
+                   {
+                         subcontrol-origin: margin;
+                         subcontrol-position: top center; /* position at the top center */
+                         padding: 0 3px;
+                    }
+                    """            
+        
+        self.gbTotal = QGroupBox('Order Totals')
+        self.gbTotal.setStyleSheet(style)
+        self.gbTotal.setMaximumWidth(325)
         
         frmTotal = QFormLayout()
 
@@ -460,51 +471,97 @@ class MainWindow(QMainWindow):
         
         self.gbTotal.setLayout(frmTotal)
         
-        vbTotal = QVBoxLayout()
-        vbTotal.addWidget(self.lblTotTitle)
-        vbTotal.addWidget(self.gbTotal)
-        
-        return vbTotal
+        return self.gbTotal
     
-    def createCustInfo(self):
+    def groupBoxStyle(self):
+        style = """QGroupBox 
+                   { 
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                         border: 2px solid gray;
+                         border-radius: 5px;
+                         margin-top: 2.5ex; /* leave space at the top for the title */
+                         font-size: 12px;
+                         font-weight: bold;
+ 
+                   } 
+                   QLabel 
+                   { 
+                       font-size: 12px; 
+                       font-weight: bold; 
+                       font-family: Veranda; 
+                   } 
+                   QCheckBox 
+                   { 
+                       font-size: 12px; 
+                       font-weight: bold; 
+                       font-family: Veranda; 
+                   } 
+                   QGroupBox::title
+                   {
+                         subcontrol-origin: margin;
+                         subcontrol-position: top center; /* position at the top center */
+                         padding: 0 3px;
+                    }
+                    """
+        
+        return style        
+        
+    
+    def custInfoForm(self):
+        
+        style = self.groupBoxStyle()
+                
+        gbCustInfo = QGroupBox('Customer\Billing Info')
+        gbCustInfo.setStyleSheet(style)        
+        gbCustInfo.setMaximumWidth(325)
+        gbCustInfo.setMinimumWidth(325)
+        gbCustInfo.setMaximumHeight(375)
+        
         frmCustInfo = QFormLayout()
         
         self.leFirstName = QLineEdit()
         self.leFirstName.textChanged.connect(self.custInfoChanged)
         self.leFirstName.setObjectName('firstName')
+        self.leFirstName.setMaximumWidth(200)
         frmCustInfo.addRow(QLabel('First Name:'), self.leFirstName)
         
         self.leLastName = QLineEdit()
         self.leLastName.textChanged.connect(self.custInfoChanged)
         self.leLastName.setObjectName('lastName')
+        self.leLastName.setMaximumWidth(200)
         frmCustInfo.addRow(QLabel('Last Name:'), self.leLastName)
-        
-        self.leStreet1 = QLineEdit()
-        self.leStreet1.textChanged.connect(self.custInfoChanged)
-        self.leStreet1.setObjectName('street1')
-        frmCustInfo.addRow(QLabel('Street 1:'), self.leStreet1)
-        
-        self.leStreet2 = QLineEdit()
-        self.leStreet2.textChanged.connect(self.custInfoChanged)
-        self.leStreet2.setObjectName('street2')
-        frmCustInfo.addRow(QLabel('Street 2:'), self.leStreet2)
-        
+
         self.leCompany = QLineEdit()
+        self.leCompany.setPlaceholderText('Not Required')
         self.leCompany.textChanged.connect(self.custInfoChanged)
         self.leCompany.setObjectName('company')
-        frmCustInfo.addRow(QLabel('*Company:'), self.leCompany)
+        self.leCompany.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('Company:'), self.leCompany)
         
+        self.leAdd1 = QLineEdit()
+        self.leAdd1.textChanged.connect(self.custInfoChanged)
+        self.leAdd1.setObjectName('add1')
+        self.leAdd1.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('Address 1:'), self.leAdd1)
+        
+        self.leAdd2 = QLineEdit()
+        self.leAdd2.textChanged.connect(self.custInfoChanged)
+        self.leAdd2.setObjectName('add2')
+        self.leAdd2.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('Address 2:'), self.leAdd2)
+       
+        self.leCity = QLineEdit()
+        self.leCity.textChanged.connect(self.custInfoChanged)
+        self.leCity.setObjectName('city')
+        self.leCity.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('City:'), self.leCity)        
+
         states = mssql_db.getStates(self)
         
         stateCompleter = QCompleter(states)
         stateCompleter.setCompletionMode(QCompleter.UnfilteredPopupCompletion)        
-        #stateCompleter.setCompletionMode(QCompleter.InlineCompletion)
         stateCompleter.setCaseSensitivity(Qt.CaseInsensitive)
-        
-        self.leCity = QLineEdit()
-        self.leCity.textChanged.connect(self.custInfoChanged)
-        self.leCity.setObjectName('city')
-        frmCustInfo.addRow(QLabel('City:'), self.leCity)        
         
         self.leState = QLineEdit()
         self.leState.setPlaceholderText("State")
@@ -512,106 +569,505 @@ class MainWindow(QMainWindow):
         self.leState.textChanged.connect(self.custInfoChanged)
         self.leState.setObjectName('state')
         frmCustInfo.addRow(QLabel('State:'), self.leState)
-        #self.leState.setFont(QFont("Times", 8, QFont.Normal))
-        #self.leState.setMaximumWidth(50)
+        self.leState.setMaximumWidth(50)
         
         self.leZip = QLineEdit()
         self.leZip.textChanged.connect(self.custInfoChanged)
         self.leZip.setObjectName('zip')
+        self.leZip.setMaximumWidth(75)
         frmCustInfo.addRow(QLabel('Zip:'), self.leZip)
+        
+        self.lePhone = QLineEdit()
+        self.lePhone.textChanged.connect(self.custInfoChanged)
+        self.lePhone.setObjectName('phone')
+        self.lePhone.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('Phone:'), self.lePhone)
+        
+        self.leEmail = QLineEdit()
+        self.leEmail.textChanged.connect(self.custInfoChanged)
+        self.leEmail.setObjectName('email')
+        self.leEmail.setMaximumWidth(200)
+        frmCustInfo.addRow(QLabel('Email:'), self.leEmail)
+        
+        self.chkOffers = QCheckBox('Send product news and special offers.')
+        frmCustInfo.addRow(self.chkOffers)
+        
+        self.chkDitto = QCheckBox('Shipping name and address same as billing.')
+        self.chkDitto.clicked.connect(self.custInfoChanged)
+        self.chkDitto.setObjectName('ditto')
+        frmCustInfo.addRow(self.chkDitto)
+        
+        gbCustInfo.setLayout(frmCustInfo)
+        
+        return gbCustInfo        
+    
+    def shippingInfoForm(self):
+        
+        style = self.groupBoxStyle()
+        
+        frmShipInfo = QFormLayout()
+        self.gbShippingInfo = QGroupBox('Shipping Info')
+        self.gbShippingInfo.setStyleSheet(style)
+        self.gbShippingInfo.setMaximumWidth(325)
+        self.gbShippingInfo.setMinimumWidth(325)
+        
+        self.leShipFn = QLineEdit()
+        self.leShipFn.textChanged.connect(self.custInfoChanged)
+        self.leShipFn.setObjectName('shipFn')
+        self.leShipFn.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('First Name:'), self.leShipFn)
+        
+        self.leShipLn = QLineEdit()
+        self.leShipLn.textChanged.connect(self.custInfoChanged)
+        self.leShipLn.setObjectName('shipLn')
+        self.leShipLn.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('Last Name:'), self.leShipLn)
+        
+        self.leShipCompany = QLineEdit()
+        self.leShipCompany.textChanged.connect(self.custInfoChanged)
+        self.leShipCompany.setObjectName('shipCompany')
+        self.leShipCompany.setPlaceholderText('Not Required')
+        self.leShipCompany.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('Company:'), self.leShipCompany)
+        
+        self.leShipAdd1 = QLineEdit()
+        self.leShipAdd1.textChanged.connect(self.custInfoChanged)
+        self.leShipAdd1.setObjectName('shipAdd1')
+        self.leShipAdd1.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('Address 1:'), self.leShipAdd1)
+        
+        self.leShipAdd2 = QLineEdit()
+        self.leShipAdd2.textChanged.connect(self.custInfoChanged)
+        self.leShipAdd2.setObjectName('shipAdd2')
+        self.leShipAdd2.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('Address 2:'), self.leShipAdd2)
+        
+        self.leShipCity = QLineEdit()
+        self.leShipCity.textChanged.connect(self.custInfoChanged)
+        self.leShipCity.setObjectName('shipCity')
+        self.leShipCity.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('City:'), self.leShipCity)
+        
+        states = mssql_db.getStates(self)
+        
+        stateCompleter = QCompleter(states)
+        stateCompleter.setCompletionMode(QCompleter.UnfilteredPopupCompletion)        
+        stateCompleter.setCaseSensitivity(Qt.CaseInsensitive)
+        
+        self.leShipState = QLineEdit()
+        self.leShipState.setPlaceholderText("State")
+        self.leShipState.setCompleter(stateCompleter)
+        self.leShipState.textChanged.connect(self.custInfoChanged)
+        self.leShipState.setObjectName('shipState')
+        self.leShipState.setMaximumWidth(50)
+        frmShipInfo.addRow(QLabel('State:'), self.leShipState)
+        
+        self.leShipZip = QLineEdit()
+        self.leShipZip.textChanged.connect(self.custInfoChanged)
+        self.leShipZip.setObjectName('shipZip')
+        self.leShipZip.setMaximumWidth(75)
+        frmShipInfo.addRow(QLabel('Zip:'), self.leShipZip)
+        
+        self.leShipPhone = QLineEdit()
+        self.leShipPhone.textChanged.connect(self.custInfoChanged)
+        self.leShipPhone.setObjectName('shipPhone')
+        self.leShipPhone.setMaximumWidth(200)
+        frmShipInfo.addRow(QLabel('Phone:'), self.leShipPhone)
+        
+        self.gbShippingInfo.setLayout(frmShipInfo)
+        
+        return self.gbShippingInfo
+    
+    def paymentForm(self):
+        
+        style = self.groupBoxStyle()
+        
+        self.frmPayInfo = QFormLayout()
+        gbPayInfo = QGroupBox('Payment Info')
+        gbPayInfo.setStyleSheet(style)
+        gbPayInfo.setMaximumWidth(325)
+        gbPayInfo.setMinimumWidth(325)
 
-        return frmCustInfo
+        payTypes = ['- Please Select Payment -', 'Credit Card', 'Check or Money Order']
+                
+        self.cbPayType = QComboBox()
+        self.cbPayType.addItems(payTypes)
+        self.cbPayType.currentIndexChanged.connect(self.cbPayTypeChanged)
+        self.cbPayType.currentIndexChanged.connect(self.custInfoChanged)
+        self.cbPayType.setObjectName('cbPayType')
+        self.frmPayInfo.addRow(self.cbPayType)
+        
+        gbPayInfo.setLayout(self.frmPayInfo)
+        
+        return gbPayInfo
+    
+    def cbPayTypeChanged(self):
+        if self.cbPayType.currentIndex() == 1:
+            print('I am a credit card.')
+            
+            self.removePayInfo()
+            self.frmPayInfo.addRow(self.cbPayType)
+            
+            ccTypes = [' - Please Select Card Type -', 'Visa', 'MasterCard', 'Discover', 'American Express']
+            
+            self.cbCardType = QComboBox()
+            self.cbCardType.addItems(ccTypes)
+            self.cbCardType.setObjectName('cardType')
+            self.cbCardType.currentIndexChanged.connect(self.custInfoChanged)
+            self.frmPayInfo.addRow(QLabel('Credit Card:'), self.cbCardType)
+            
+            self.leCardNumber = QLineEdit()
+            self.frmPayInfo.addRow(QLabel('Card Number:'), self.leCardNumber)
+            
+            self.leCardExpire = QLineEdit()
+            self.frmPayInfo.addRow(QLabel('Expiration Date:'), self.leCardExpire)
+            
+            self.leCardCode = QLineEdit()
+            self.frmPayInfo.addRow(QLabel('Security Code:'), self.leCardCode)
+            
+            
+        elif self.cbPayType.currentIndex() == 2:
+            print('I am a money order')
+            
+            self.removePayInfo()
+            self.frmPayInfo.addRow(self.cbPayType)
+            
+            self.checkNumber = QLineEdit()
+            self.frmPayInfo.addRow(QLabel('Check\MO Number:'), self.checkNumber)
+        else:
+            self.removePayInfo()
+        
+    def removePayInfo(self):
+        for cnt in reversed(range(self.frmPayInfo.count())):
+            # takeAt does both the jobs of itemAt and removeWidget
+            # namely it removes an item and returns it
+            widget = self.frmPayInfo.takeAt(cnt).widget()
+    
+            if widget is not None: 
+                if widget.objectName() != 'cbPayType':
+                    # widget will be None if the item is a layout
+                    widget.deleteLater()         
+    
+    def createCustInfo(self):
+
+        btnReview = QToolButton()
+        btnReview.setIcon(QIcon("icon/review.png"))
+        btnReview.setAutoRaise(1)
+        btnReview.setIconSize(QSize(50, 50))
+        btnReview.clicked.connect(lambda: self.twMain.setCurrentIndex(1))
+        
+        custInfo = self.custInfoForm()
+        shipInfo = self.shippingInfoForm()
+        payInfo = self.paymentForm()
+        
+        gbSpecial = QGroupBox('Special Instructions')
+        gbSpecial.setStyleSheet(self.groupBoxStyle())
+        gbSpecial.setMaximumWidth(325)
+        gbSpecial.setMaximumHeight(125)
+        
+        self.teSpecial = QTextEdit()
+        self.teSpecial.setMaximumWidth(300)
+        
+        hbSpecial = QHBoxLayout()
+        hbSpecial.addWidget(self.teSpecial)
+        
+        gbSpecial.setLayout(hbSpecial)
+        
+        gbGiftMsg = QGroupBox('Gift Message')
+        gbGiftMsg.setStyleSheet(self.groupBoxStyle())
+        gbGiftMsg.setMaximumWidth(325)
+        gbGiftMsg.setMaximumHeight(125)
+        
+        self.teGiftMsg = QTextEdit()
+        self.teGiftMsg.setMaximumWidth(300)
+        hbGift = QHBoxLayout()
+        hbGift.addWidget(self.teGiftMsg)
+        
+        gbGiftMsg.setLayout(hbGift)
+                
+        grdCust = QGridLayout()
+        grdCust.addWidget(custInfo, 0, 0)
+        grdCust.addWidget(shipInfo, 0, 1)
+        grdCust.addWidget(payInfo, 0, 2)
+        grdCust.addWidget(gbGiftMsg, 1, 0, 1, 1)
+        grdCust.addWidget(gbSpecial, 1, 1, 1, 1)
+        grdCust.addWidget(btnReview, 1, 2)
+        
+        return grdCust
     
     def showCustInfo(self):
-        self.lblCustTitle = QLabel('Customer\Billing Info:')
-        self.lblCustTitle.setStyleSheet("QLabel { font-size: 12; font-weight; margin-left: 25px; margin-right: 25px; }")
-        self.lblCustTitle.setFont(QFont('Times', 12, QFont.Bold))        
-        self.lblCustTitle.hide()
         
-        self.gbCustInfo = QGroupBox()
-        self.gbCustInfo.setStyleSheet("""QGroupBox {  border: 2px solid black; border-radius: 9px; font-size: 12px; font-weight: bold; margin-left: 25px; margin-right: 25px;} 
-                                      QLabel { font-size: 12px; font-weight: bold; font-family: Times; }""")
+        styleCust = """QGroupBox 
+                   { 
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                         border: 2px solid gray;
+                         border-radius: 5px;
+                         margin-top: 2.5ex; /* leave space at the top for the title */
+                         font-size: 14px;
+                         font-weight: bold;
+                         margin-left: 25px;
+                    } 
+                   QLabel 
+                   { 
+                       font-size: 12px; 
+                       font-weight: bold; 
+                       font-family: Veranda; 
+                   } 
+                   QGroupBox::title
+                   {
+                         subcontrol-origin: margin;
+                         subcontrol-position: top center; /* position at the top center */
+                         padding: 0 3px;
+                    }
+                    """        
+                    
+        styleShip = """QGroupBox 
+                   { 
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                         border: 2px solid gray;
+                         border-radius: 5px;
+                         margin-top: 2.5ex; /* leave space at the top for the title */
+                         font-size: 14px;
+                         font-weight: bold;
+                         margin-left: 5px;
+                    } 
+                   QLabel 
+                   { 
+                       font-size: 12px; 
+                       font-weight: bold; 
+                       font-family: Veranda; 
+                   } 
+                   QGroupBox::title
+                   {
+                         subcontrol-origin: margin;
+                         subcontrol-position: top center; /* position at the top center */
+                         padding: 0 3px;
+                    }
+                    """                        
+        
+        
+        self.gbCustInfo = QGroupBox('Customer\Billing Info')
+        self.gbCustInfo.setStyleSheet(styleCust)
+        self.gbCustInfo.setMinimumWidth(325)
+        
         frmCustInfo = QFormLayout()
         
         self.lblTxtFname = QLabel()
         self.lblTxtFname.setText(self.leFirstName.text())
-        frmCustInfo.addRow(QLabel('First Name:'), self.lblTxtFname)
+        #frmCustInfo.addRow(QLabel('First Name:'), self.lblTxtFname)
         
         self.lblTxtLname = QLabel()
         self.lblTxtLname.setText(self.leLastName.text())
-        frmCustInfo.addRow(QLabel('Last Name:'), self.lblTxtLname)
+        #frmCustInfo.addRow(QLabel('Last Name:'), self.lblTxtLname)
         
-        self.lblTxtStreet1 = QLabel()
-        self.lblTxtStreet1.setText(self.leStreet1.text())
-        frmCustInfo.addRow(QLabel('Street 1:'), self.lblTxtStreet1)
-        
-        self.lblTxtStreet2 = QLabel()
-        self.lblTxtStreet2.setText(self.leStreet2.text())
-        frmCustInfo.addRow(QLabel('Street 2:'), self.lblTxtStreet2)
-        
+        hbName = QHBoxLayout()
+        #hbName.addWidget(QLabel('First Name:'))
+        hbName.addWidget(self.lblTxtFname)
+        #hbName.addWidget(QLabel('Last Name:'))
+        hbName.addWidget(self.lblTxtLname)
+        hbName.addStretch()
+        frmCustInfo.addRow(QLabel('Name:'), hbName)
+
         self.lblTxtCompany = QLabel()
         self.lblTxtCompany.setText(self.leCompany.text())
-        frmCustInfo.addRow(QLabel('*Company:'), self.lblTxtCompany)
+        frmCustInfo.addRow(QLabel('Company:'), self.lblTxtCompany)
+                
+        self.lblTxtAdd1 = QLabel()
+        self.lblTxtAdd1.setText(self.leAdd1.text())
+        frmCustInfo.addRow(QLabel('Address 1:'), self.lblTxtAdd1)
         
+        self.lblTxtAdd2 = QLabel()
+        self.lblTxtAdd2.setText(self.leAdd2.text())
+        frmCustInfo.addRow(QLabel('Address 2:'), self.lblTxtAdd2)
+
         self.lblTxtCity = QLabel()
-        self.lblTxtCity.setText(self.leCity.text())
-        frmCustInfo.addRow(QLabel('City:'), self.lblTxtCity)        
+        if self.leCity.text() != '':
+            self.lblTxtCity.setText(self.leCity.text() + ',')
+        #frmCustInfo.addRow(QLabel('City:'), self.lblTxtCity)        
         
         self.lblTxtState = QLabel()
         self.lblTxtState.setText(self.leState.text())
-        frmCustInfo.addRow(QLabel('State:'), self.lblTxtState)
+        #frmCustInfo.addRow(QLabel('State:'), self.lblTxtState)
         
         self.lblTxtZip = QLabel()
         self.lblTxtZip.setText(self.leZip.text())
-        frmCustInfo.addRow(QLabel('Zip:'), self.lblTxtZip)
+        #frmCustInfo.addRow(QLabel('Zip:'), self.lblTxtZip)
+       
+        hbAddy = QHBoxLayout()
+        hbAddy.addWidget(self.lblTxtCity)
+        hbAddy.addWidget(self.lblTxtState)
+        hbAddy.addWidget(self.lblTxtZip)
+        hbAddy.addStretch()
+        frmCustInfo.addRow(QLabel('City/State/Zip:'), hbAddy)
+       
+        self.lblTxtPhone = QLabel()
+        self.lblTxtPhone.setText(self.lePhone.text())
+        frmCustInfo.addRow(QLabel('Phone:'), self.lblTxtPhone)
+        
+        self.lblTxtEmail = QLabel()
+        self.lblTxtEmail.setText(self.leEmail.text())
+        frmCustInfo.addRow(QLabel('Email:'), self.lblTxtEmail)
+        
+        self.lblTxtShipSame = QLabel()
+        if self.chkDitto.isChecked():
+            self.lblTxtShipSame.setText('*Shipping name and address same as billing.')
+
+        frmCustInfo.addRow(self.lblTxtShipSame)
         
         self.gbCustInfo.setLayout(frmCustInfo)
         self.gbCustInfo.hide()
         
-        vbCustInfo = QVBoxLayout()
-        vbCustInfo.addWidget(self.lblCustTitle)
-        vbCustInfo.addWidget(self.gbCustInfo)
-        vbCustInfo.addStretch()
         
-        return vbCustInfo
+        self.gbShipInfo = QGroupBox('Shipping Info')
+        self.gbShipInfo.setStyleSheet(styleShip)
+        self.gbShipInfo.setMinimumWidth(325)
+        frmShipInfo = QFormLayout()
+        
+        self.lblTxtShipFn = QLabel()
+        self.lblTxtShipFn.setText(self.leShipFn.text())
+        #frmShipInfo.addRow(QLabel('First Name:'), self.lblTxtShipFn)
+        
+        self.lblTxtShipLn = QLabel()
+        self.lblTxtShipLn.setText(self.leShipLn.text())
+        #frmShipInfo.addRow(QLabel('Last Name:'), self.lblTxtShipLn)
+        
+        hbShipName = QHBoxLayout()
+        hbShipName.addWidget(self.lblTxtShipFn)
+        hbShipName.addWidget(self.lblTxtShipLn)
+        hbShipName.addStretch()
+        frmShipInfo.addRow(QLabel('Name:'), hbShipName)
+        
+        self.lblTxtShipCompany = QLabel()
+        self.lblTxtShipCompany.setText(self.leShipCompany.text())
+        frmShipInfo.addRow(QLabel('Company:'), self.lblTxtShipCompany)
+        
+        self.lblTxtShipAdd1 = QLabel()
+        self.lblTxtShipAdd1.setText(self.leShipAdd1.text())
+        frmShipInfo.addRow(QLabel('Address 1:'), self.lblTxtShipAdd1)
+        
+        self.lblTxtShipAdd2 = QLabel()
+        self.lblTxtShipAdd2.setText(self.leShipAdd2.text())
+        frmShipInfo.addRow(QLabel('Address 2:'), self.lblTxtShipAdd2)
+        
+        self.lblTxtShipCity = QLabel()
+        if self.leShipCity.text() != '':
+            self.lblTxtShipCity.setText(self.leShipCity.text() + ',')
+        
+        self.lblTxtShipState = QLabel()
+        self.lblTxtShipState.setText(self.leShipState.text())
+        
+        self.lblTxtShipZip = QLabel()
+        self.lblTxtShipZip.setText(self.leShipZip.text())
+        
+        hbShipAdd = QHBoxLayout()
+        hbShipAdd.addWidget(self.lblTxtShipCity)
+        hbShipAdd.addWidget(self.lblTxtShipState)
+        hbShipAdd.addWidget(self.lblTxtShipZip)
+        hbShipAdd.addStretch()
+        frmShipInfo.addRow(QLabel('City/State/Zip:'), hbShipAdd)
+        
+        self.lblTxtShipPhone = QLabel()
+        self.lblTxtShipPhone.setText(self.leShipPhone.text())
+        frmShipInfo.addRow(QLabel('Phone:'), self.lblTxtShipPhone)
+                
+        self.gbShipInfo.setLayout(frmShipInfo)
+        self.gbShipInfo.hide()
+        
+        self.gbPayInfo = QGroupBox('Payment Details')
+        self.gbPayInfo.setStyleSheet(styleCust)
+        
+        frmPayInfo = QFormLayout()
+        self.lblTxtPayType = QLabel()
+        self.lblTxtPayType.setText(self.cbPayType.currentText())
+        frmPayInfo.addRow(QLabel('Payment Type:'), self.lblTxtPayType)
+        
+        self.lblTxtCardType = QLabel()
+        self.lblTxtCardType.setText('test')
+        frmPayInfo.addRow(QLabel('Card Type:'), self.lblTxtCardType)
+        
+        self.gbPayInfo.setLayout(frmPayInfo)
+        self.gbPayInfo.hide()
+        
+        
+        grdShipBill = QGridLayout()
+        grdShipBill.addWidget(self.gbCustInfo, 0, 0, 2, 1)
+        grdShipBill.addWidget(self.gbShipInfo, 0, 1)
+        grdShipBill.addWidget(self.gbPayInfo, 2, 0)
+        
+        return grdShipBill
     
     def custInfoChanged(self, text):
-        le = self.sender()
-        print(le.objectName(), text)
-        if le != None:
+        wdt = self.sender()
+        print(wdt.objectName(), text)
+        if wdt != None:
             self.gbCustInfo.show()
-            self.lblCustTitle.show()
-            if le.objectName() == 'firstName':
+            #self.lblCustTitle.show()
+            self.gbShipInfo.show()
+            if wdt.objectName() == 'firstName':
                 self.lblTxtFname.setText(text)
-            elif le.objectName() == 'lastName':
+            elif wdt.objectName() == 'lastName':
                 self.lblTxtLname.setText(text)
-            elif le.objectName() == 'street1':
-                self.lblTxtStreet1.setText(text)
-            elif le.objectName() == 'street2':
-                self.lblTxtStreet2.setText(text)
-            elif le.objectName() == 'company':
+            elif wdt.objectName() == 'add1':
+                self.lblTxtAdd1.setText(text)
+            elif wdt.objectName() == 'add2':
+                self.lblTxtAdd2.setText(text)
+            elif wdt.objectName() == 'company':
                 self.lblTxtCompany.setText(text)
-            elif le.objectName() == 'city':
-                self.lblTxtCity.setText(text)                
-            elif le.objectName() == 'state':
+            elif wdt.objectName() == 'city':
+                self.lblTxtCity.setText(text + ',')                
+            elif wdt.objectName() == 'state':
                 self.lblTxtState.setText(text)
-            elif le.objectName() == 'zip':
+            elif wdt.objectName() == 'zip':
                 self.lblTxtZip.setText(text)
-
-    
-    def changeCentralWidget(self, widgetLayout):
-        self.mainWidget = QWidget()
-        self.mainWidget.setLayout(widgetLayout)
-        #self.mainWidget.setMinimumSize(900, 800)
-        if str(widgetLayout.objectName()) == "designPage":
-            self.mainWidget.setStyleSheet("background-color: rgb(255, 255, 255);")
-        
-        self.scrollWidget = QScrollArea()
-        self.scrollWidget.setWidgetResizable(True)
-        self.scrollWidget.setWidget(self.mainWidget)
-        self.scrollWidget.setAlignment(Qt.AlignTop)
-        
-        self.setCentralWidget(self.scrollWidget)
+            elif wdt.objectName() == 'phone':
+                self.lblTxtPhone.setText(text)
+            elif wdt.objectName() == 'email':
+                self.lblTxtEmail.setText(text)
+            elif wdt.objectName() == 'cardType':
+                self.lblTxtCardType = self.cbCardType.currentText()
+                print(self.cbCardType.currentText())
+            elif wdt.objectName() == 'ditto':
+                if wdt.isChecked() == True:
+                    self.lblTxtShipSame.setText('*Shipping name and address same as billing.')
+                    self.lblTxtShipSame.show()
+                    self.gbShipInfo.hide()
+                    self.gbShippingInfo.setEnabled(False)
+                else:
+                    self.lblTxtShipSame.hide()
+                    self.gbShipInfo.show()
+                    self.gbShippingInfo.setEnabled(True)
+            if self.leFirstName.text() == '':
+                self.gbCustInfo.hide()
+                self.gbShipInfo.hide()
+                self.gbPayInfo.hide()
+            if wdt.objectName() == 'cbPayType':
+                if wdt.currentText() != '- Please Select Payment -':
+                    self.lblTxtPayType.setText(wdt.currentText())
+                    self.gbPayInfo.show()
+                else:
+                    self.gbPayInfo.hide()
+            #if the shipping and the billing addresses are the same.
+            if self.chkDitto.isChecked() == False:
+                if wdt.objectName() == 'shipFn':
+                    self.lblTxtShipFn.setText(text)
+                elif wdt.objectName() == 'shipLn':
+                    self.lblTxtShipLn.setText(text)
+                elif wdt.objectName() == 'shipCompany':
+                    self.lblTxtShipCompany.setText(text)
+                elif wdt.objectName() == 'shipAdd1':
+                    self.lblTxtShipAdd1.setText(text)
+                elif wdt.objectName() == 'shipAdd2':
+                    self.lblTxtShipAdd2.setText(text)
+                elif wdt.objectName() == 'shipCity':
+                    self.lblTxtShipCity.setText(text + ',')
+                elif wdt.objectName() == 'shipState':
+                    self.lblTxtShipState.setText(text)
+                elif wdt.objectName() == 'shipZip':
+                    self.lblTxtShipZip.setText(text)
+                elif wdt.objectName() == 'shipPhone':
+                    self.lblTxtShipPhone.setText(text)
         
 ####################################################################################################################################################        
 ###### class for garment tree ######################################################################################################################        
