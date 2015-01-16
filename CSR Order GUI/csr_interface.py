@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QApplication, QDockWidget, QListWidget, QMainWindow, QMessageBox, QLineEdit, QDesktopWidget, QTreeWidget, QTableWidgetItem, QGridLayout, QToolButton, QAction,
-                             QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QScrollArea, QTreeWidgetItem, QInputDialog,
+                             QTreeWidgetItemIterator, QPushButton, QLabel, QListWidgetItem, QHBoxLayout, QFrame, QTableWidget, QVBoxLayout, QWidget, QTreeWidgetItem, QInputDialog,
                              QDialog, QTextEdit, QRadioButton, QSizePolicy, QFormLayout, QGroupBox, QTabWidget, QCompleter, QCheckBox)
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QColor, QPalette
 import mysql.connector
