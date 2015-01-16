@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
         
         self.vbSearch = QVBoxLayout(self.tabSearch)
         self.vbSearch.addLayout(self.createDesignButtons('default'))
-        self.twMain.addTab(self.tabSearch, 'Search')
+        self.twMain.addTab(self.tabSearch, 'Designs')
         
         self.vbOrder = QVBoxLayout(self.tabOrder)
         self.twMain.addTab(self.tabOrder, 'Order Details')
@@ -300,9 +300,9 @@ class MainWindow(QMainWindow):
         
         if self.leFirstName.text() != "":
             self.gbCustInfo.show()
-            if self.cbPayType.currentIndex() != 0:
-                self.gbPayInfo.show()
-            #self.lblCustTitle.show()
+            self.gbPayInfo.show()
+            self.gbGiftMsg.show()
+            self.gbSpecInst.show()
             if self.chkDitto.isChecked() == False:
                 self.gbShipInfo.show()
         
@@ -403,7 +403,6 @@ class MainWindow(QMainWindow):
                         shipCost = 0.00
                     if totPcs >= 12:
                         tenPct = True
-                    print(totPcs, tenPct)
                     self.lblTotShip.setText('$' + format(shipCost, '.2f'))
                     self.lblTotPri.setText('$' + format(totPri, '.2f'))
                     if tenPct == True:
@@ -419,6 +418,9 @@ class MainWindow(QMainWindow):
                 self.gbTotal.hide()
                 self.gbCustInfo.hide()
                 self.gbShipInfo.hide()
+                self.gbPayInfo.hide()
+                self.gbGiftMsg.hide()
+                self.gbSpecInst.hide()
 
         
     def totalBox(self):
@@ -688,22 +690,24 @@ class MainWindow(QMainWindow):
         gbPayInfo.setMaximumWidth(325)
         gbPayInfo.setMinimumWidth(325)
 
-        payTypes = ['- Please Select Payment -', 'Credit Card', 'Check or Money Order']
+        payTypes = ['Credit Card', 'Check or Money Order']
                 
         self.cbPayType = QComboBox()
         self.cbPayType.addItems(payTypes)
         self.cbPayType.currentIndexChanged.connect(self.cbPayTypeChanged)
         self.cbPayType.currentIndexChanged.connect(self.custInfoChanged)
         self.cbPayType.setObjectName('cbPayType')
+        self.cbPayType.setCurrentIndex(0)
         self.frmPayInfo.addRow(self.cbPayType)
         
         gbPayInfo.setLayout(self.frmPayInfo)
         
+        self.cbPayTypeChanged(0)
+        
         return gbPayInfo
     
-    def cbPayTypeChanged(self):
-        if self.cbPayType.currentIndex() == 1:
-            print('I am a credit card.')
+    def cbPayTypeChanged(self, index):
+        if index == 0:
             
             self.removePayInfo()
             self.frmPayInfo.addRow(self.cbPayType)
@@ -717,25 +721,32 @@ class MainWindow(QMainWindow):
             self.frmPayInfo.addRow(QLabel('Credit Card:'), self.cbCardType)
             
             self.leCardNumber = QLineEdit()
+            self.leCardNumber.setObjectName('cardNumber')
+            self.leCardNumber.textChanged.connect(self.custInfoChanged)
             self.frmPayInfo.addRow(QLabel('Card Number:'), self.leCardNumber)
             
             self.leCardExpire = QLineEdit()
+            self.leCardExpire.setObjectName('cardExpire')
+            self.leCardExpire.textChanged.connect(self.custInfoChanged)
             self.frmPayInfo.addRow(QLabel('Expiration Date:'), self.leCardExpire)
             
             self.leCardCode = QLineEdit()
+            self.leCardCode.setObjectName('cardCode')
+            self.leCardCode.textChanged.connect(self.custInfoChanged)
             self.frmPayInfo.addRow(QLabel('Security Code:'), self.leCardCode)
             
-            
-        elif self.cbPayType.currentIndex() == 2:
-            print('I am a money order')
+        elif index == 1:
             
             self.removePayInfo()
             self.frmPayInfo.addRow(self.cbPayType)
             
-            self.checkNumber = QLineEdit()
-            self.frmPayInfo.addRow(QLabel('Check\MO Number:'), self.checkNumber)
+            self.leCheckNumber = QLineEdit()
+            self.leCheckNumber.setObjectName('checkNumber')
+            self.leCheckNumber.textChanged.connect(self.custInfoChanged)
+            self.frmPayInfo.addRow(QLabel('Check\MO Number:'), self.leCheckNumber)
         else:
             self.removePayInfo()
+        
         
     def removePayInfo(self):
         for cnt in reversed(range(self.frmPayInfo.count())):
@@ -767,6 +778,8 @@ class MainWindow(QMainWindow):
         
         self.teSpecial = QTextEdit()
         self.teSpecial.setMaximumWidth(300)
+        self.teSpecial.setObjectName('specInst')
+        self.teSpecial.textChanged.connect(self.textEditChanged)
         
         hbSpecial = QHBoxLayout()
         hbSpecial.addWidget(self.teSpecial)
@@ -780,6 +793,9 @@ class MainWindow(QMainWindow):
         
         self.teGiftMsg = QTextEdit()
         self.teGiftMsg.setMaximumWidth(300)
+        self.teGiftMsg.setObjectName('giftMsg')
+        self.teGiftMsg.textChanged.connect(self.textEditChanged)
+        
         hbGift = QHBoxLayout()
         hbGift.addWidget(self.teGiftMsg)
         
@@ -794,6 +810,10 @@ class MainWindow(QMainWindow):
         grdCust.addWidget(btnReview, 1, 2)
         
         return grdCust
+    
+    def textEditChanged(self):
+        te = self.sender()
+        self.custInfoChanged(te.toPlainText())
     
     def showCustInfo(self):
         
@@ -820,6 +840,14 @@ class MainWindow(QMainWindow):
                          subcontrol-position: top center; /* position at the top center */
                          padding: 0 3px;
                     }
+                    QTextEdit
+                    {
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                         font-weight: bold;
+                         border: 0px;
+                    
+                    }                    
                     """        
                     
         styleShip = """QGroupBox 
@@ -844,6 +872,13 @@ class MainWindow(QMainWindow):
                          subcontrol-origin: margin;
                          subcontrol-position: top center; /* position at the top center */
                          padding: 0 3px;
+                    }
+                    QTextEdit
+                    {
+                         background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                           stop: 0 #E0E0E0, stop: 1 #FFFFFF);
+                        font-weight: bold;
+                        border: 0px;
                     }
                     """                        
         
@@ -978,33 +1013,98 @@ class MainWindow(QMainWindow):
         self.gbPayInfo = QGroupBox('Payment Details')
         self.gbPayInfo.setStyleSheet(styleCust)
         
-        frmPayInfo = QFormLayout()
+        self.frmPaymentInfo = QFormLayout()
         self.lblTxtPayType = QLabel()
         self.lblTxtPayType.setText(self.cbPayType.currentText())
-        frmPayInfo.addRow(QLabel('Payment Type:'), self.lblTxtPayType)
         
-        self.lblTxtCardType = QLabel()
-        self.lblTxtCardType.setText('test')
-        frmPayInfo.addRow(QLabel('Card Type:'), self.lblTxtCardType)
+        self.getPaymentDetails()
         
-        self.gbPayInfo.setLayout(frmPayInfo)
+        self.gbPayInfo.setLayout(self.frmPaymentInfo)
         self.gbPayInfo.hide()
         
+        self.gbGiftMsg = QGroupBox('Gift Message')
+        self.gbGiftMsg.setStyleSheet(styleCust)
+        
+        frmGiftMsg = QFormLayout()
+        
+        self.teTxtGiftMsg = QTextEdit()
+        self.teTxtGiftMsg.setReadOnly(True)
+        self.teTxtGiftMsg.setText(self.teGiftMsg.toPlainText())
+        
+        frmGiftMsg.addRow(self.teTxtGiftMsg)
+        
+        self.gbGiftMsg.setLayout(frmGiftMsg)
+        self.gbGiftMsg.hide()
+        
+        self.gbSpecInst = QGroupBox('Special Instructions')
+        self.gbSpecInst.setMinimumWidth(325)
+        self.gbSpecInst.setStyleSheet(styleShip)
+        
+        frmSpecInst = QFormLayout()
+        
+        self.teTxtSpecInst = QTextEdit()
+        self.teTxtSpecInst.setReadOnly(True)
+        self.teTxtSpecInst.setText(self.teSpecial.toPlainText())
+        
+        frmSpecInst.addRow(self.teTxtSpecInst)
+        
+        self.gbSpecInst.setLayout(frmSpecInst)
+        self.gbSpecInst.hide()
         
         grdShipBill = QGridLayout()
-        grdShipBill.addWidget(self.gbCustInfo, 0, 0, 2, 1)
+        grdShipBill.addWidget(self.gbCustInfo, 0, 0)
         grdShipBill.addWidget(self.gbShipInfo, 0, 1)
         grdShipBill.addWidget(self.gbPayInfo, 2, 0)
+        grdShipBill.addWidget(self.gbGiftMsg, 3, 0)
+        grdShipBill.addWidget(self.gbSpecInst, 3, 1)
         
         return grdShipBill
     
+    def getPaymentDetails(self):
+        if self.cbPayType.currentIndex() == 0:
+            self.clearLayout(self.frmPaymentInfo)
+            self.frmPaymentInfo.addRow(QLabel('Payment Type:'), self.lblTxtPayType)
+            
+            self.lblTxtCardType = QLabel()
+            self.lblTxtCardType.setText(self.cbCardType.currentText())
+            self.frmPaymentInfo.addRow(QLabel('Card Type:'), self.lblTxtCardType)
+            
+            self.lblTxtCardNumber = QLabel()
+            self.lblTxtCardNumber.setText(self.leCardNumber.text())
+            self.frmPaymentInfo.addRow(QLabel('Card number:'), self.lblTxtCardNumber)
+            
+            self.lblTxtCardExpire = QLabel()
+            self.lblTxtCardExpire.setText(self.leCardExpire.text())
+            self.frmPaymentInfo.addRow(QLabel('Expiration:'), self.lblTxtCardExpire)
+            
+            self.lblTxtCardCode = QLabel()
+            self.lblTxtCardCode.setText(self.leCardCode.text())
+            self.frmPaymentInfo.addRow(QLabel('Security Code:'), self.lblTxtCardCode)
+            
+        elif self.cbPayType.currentIndex() == 1:
+            self.clearLayout(self.frmPaymentInfo)
+            self.frmPaymentInfo.addRow(QLabel('Payment Type:'), self.lblTxtPayType)
+            self.lblTxtChkNumber = QLabel()
+            self.lblTxtChkNumber.setText(self.leCheckNumber.text())
+            self.frmPaymentInfo.addRow(QLabel('Check\MO Number:'), self.lblTxtChkNumber)
+                
+    
     def custInfoChanged(self, text):
         wdt = self.sender()
-        print(wdt.objectName(), text)
+        
+        if wdt.objectName() == 'cbPayType':
+            self.lblTxtPayType = QLabel()
+            self.lblTxtPayType.setText(self.cbPayType.currentText()) 
+            self.getPaymentDetails()
+            
         if wdt != None:
             self.gbCustInfo.show()
-            #self.lblCustTitle.show()
-            self.gbShipInfo.show()
+            if self.chkDitto.isChecked() == False:
+                self.gbShipInfo.show()
+            self.gbPayInfo.show()
+            self.gbGiftMsg.show()
+            self.gbSpecInst.show()
+            
             if wdt.objectName() == 'firstName':
                 self.lblTxtFname.setText(text)
             elif wdt.objectName() == 'lastName':
@@ -1026,8 +1126,21 @@ class MainWindow(QMainWindow):
             elif wdt.objectName() == 'email':
                 self.lblTxtEmail.setText(text)
             elif wdt.objectName() == 'cardType':
-                self.lblTxtCardType = self.cbCardType.currentText()
-                print(self.cbCardType.currentText())
+                self.lblTxtCardType.setText(self.cbCardType.currentText())
+            elif wdt.objectName() == 'cbPayType':
+                self.lblTxtPayType.setText(wdt.currentText())
+            elif wdt.objectName() == 'checkNumber':
+                self.lblTxtChkNumber.setText(text)
+            elif wdt.objectName() == 'cardNumber':
+                self.lblTxtCardNumber.setText(text)
+            elif wdt.objectName() == 'cardExpire':
+                self.lblTxtCardExpire.setText(text)
+            elif wdt.objectName() == 'cardCode':
+                self.lblTxtCardCode.setText(text)
+            elif wdt.objectName() == 'giftMsg':
+                self.teTxtGiftMsg.setText(text)
+            elif wdt.objectName() == 'specInst':
+                self.teTxtSpecInst.setText(text)
             elif wdt.objectName() == 'ditto':
                 if wdt.isChecked() == True:
                     self.lblTxtShipSame.setText('*Shipping name and address same as billing.')
@@ -1042,12 +1155,9 @@ class MainWindow(QMainWindow):
                 self.gbCustInfo.hide()
                 self.gbShipInfo.hide()
                 self.gbPayInfo.hide()
-            if wdt.objectName() == 'cbPayType':
-                if wdt.currentText() != '- Please Select Payment -':
-                    self.lblTxtPayType.setText(wdt.currentText())
-                    self.gbPayInfo.show()
-                else:
-                    self.gbPayInfo.hide()
+                self.gbPayInfo.hide()
+
+
             #if the shipping and the billing addresses are the same.
             if self.chkDitto.isChecked() == False:
                 if wdt.objectName() == 'shipFn':
@@ -1630,7 +1740,7 @@ class GarmentTree(QTreeWidget):
                 #load that design
                 mainWin.loadDesignItem(skuCode)    
         else:
-            print('nothing left homes.')
+            pass
             
     def sumQuantity(self, item, column):
         if item.text(column) and item.childCount() == 0 and item.parent() != None:
